@@ -96,6 +96,9 @@
         // 1.1. Убираем атрибуты aria-level с любыми цифрами
         html = html.replace(/\s*aria-level="\d+"/gi, '');
 
+        // 1.2. Убираем атрибут bis_size с любым содержимым
+        html = html.replace(/\s+bis_size="[^"]*"/gi, '');
+
         // 2. Убираем пустые параграфы (включая с &nbsp;)
         html = html.replace(/<p[^>]*>(\s|&nbsp;)*<\/p>/gi, '');
 
