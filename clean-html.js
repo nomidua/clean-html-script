@@ -78,7 +78,7 @@
                 html = editor.value;
                 originalLength = html.length;
             } else {
-                showNotification('Редактор не найден! Кликните в поле редактора.', '#f44336');
+                showNotification('Редактор или текст не найден!', '#f44336');
                 return;
             }
         }
