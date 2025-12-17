@@ -1,10 +1,7 @@
 /**
  * Clean HTML Script
- * Version: 0.88
- * Last Updated: 2025-01-16
- * 
- * Для обхода кеша:
- * <script src="https://1001sovet.com/clean-html.js?v=0.87"></script>
+ * Version: 0.89
+ * Last Updated: 2025-01-17
  */
 
 (function() {
