@@ -1,7 +1,7 @@
 /**
  * Clean HTML Script
  * Version: 0.89
- * Last Updated: 2025-01-17
+ * Last Updated: 2025-12-17
  */
 
 (function() {
