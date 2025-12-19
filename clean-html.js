@@ -1,6 +1,6 @@
 /**
  * Clean HTML Script
- * Version: 0.89
+ * Version: 0.9
  * Last Updated: 2025-12-17
  */
 
