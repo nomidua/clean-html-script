@@ -1,7 +1,7 @@
 /**
  * Clean HTML Script
- * Version: 0.91
- * Last Updated: 2025-12-17
+ * Version: 0.92
+ * Last Updated: 2025-12-19
  */
 
 (function() {
@@ -219,11 +219,14 @@ html = html.replace(/<iframe[^>]*(?:src|data-src)="[^"]*(?:youtube\.com\/embed\/
 });
 
 // 19.1. Оборачиваем YouTube iframe в <p style="text-align: center;">
-html = html.replace(/<iframe[^>]+youtube\.com\/embed\/[^>]+><\/iframe>/gi, function(match) {
-    // Проверяем, уже ли обёрнут в <p>
-    return match;
+html = html.replace(/(<p[^>]*>)?(\s*)(<iframe[^>]+youtube\.com\/embed\/[^>]+><\/iframe>)(\s*)(<\/p>)?/gi, function(match, openP, space1, iframe, space2, closeP) {
+    // Если уже есть <p> с style="text-align: center;" - оставляем как есть
+    if (openP && /style="[^"]*text-align:\s*center/i.test(openP)) {
+        return match;
+    }
+    // Оборачиваем в новый <p> со стилем
+    return '<p style="text-align: center;">' + iframe + '</p>';
 });
-html = html.replace(/(?:<p[^>]*>)?\s*(<iframe[^>]+youtube\.com\/embed\/[^>]+><\/iframe>)\s*(?:<\/p>)?/gi, '<p style="text-align: center;">$1</p>');
 
         // 20. Автоматическая расстановка знаков препинания в списках
         html = html.replace(/<(ul|ol)>([\s\S]*?)<\/\1>/gi, function(match, tag, content) {
