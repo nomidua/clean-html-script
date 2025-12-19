@@ -196,29 +196,34 @@
         html = html.replace(/(&nbsp;)+/g, ' ');
         html = html.replace(/  +/g, ' ');
 
-        // 19. Очистка и форматирование YouTube iframe
-html = html.replace(/<p>(\s*)<iframe[^>]*src="[^"]*(?:youtube\.com\/embed\/|youtu\.be\/)[^"]*"[^>]*><\/iframe>(\s*)<\/p>/gi, function(match) {
-    // Извлекаем URL из src или data-src
-    var srcMatch = match.match(/(?:data-src|src)="([^"]*)"/i);
-    if (!srcMatch) return match;
+// 19. Очистка и форматирование YouTube iframe (шаг 1: очистка атрибутов)
+html = html.replace(/<iframe[^>]*(?:src|data-src)="[^"]*(?:youtube\.com\/embed\/|youtu\.be\/)[^"]*"[^>]*>/gi, function(match) {
+    // Извлекаем URL из src или data-src (приоритет data-src)
+    var dataSrcMatch = match.match(/data-src="([^"]*)"/i);
+    var srcMatch = match.match(/src="([^"]*)"/i);
+    var url = (dataSrcMatch && dataSrcMatch[1]) || (srcMatch && srcMatch[1]);
     
-    var url = srcMatch[1];
-    
-    // Проверяем что это YouTube
-    if (!/youtube\.com\/embed\/|youtu\.be\//i.test(url)) return match;
+    if (!url || !/youtube\.com\/embed\/|youtu\.be\//i.test(url)) return match;
     
     // Очищаем URL - убираем всё после ?
     url = url.split('?')[0];
     
     // Нормализуем youtu.be -> youtube.com/embed/
     if (url.indexOf('youtu.be/') !== -1) {
-        var videoId = url.split('youtu.be/')[1];
+        var videoId = url.split('youtu.be/')[1].split('?')[0].split('&')[0];
         url = 'https://www.youtube.com/embed/' + videoId;
     }
     
     // Формируем чистый iframe
-    return '<p style="text-align: center;"><iframe allowfullscreen="" frameborder="0" height="360" src="' + url + '" width="640"></iframe></p>';
+    return '<iframe allowfullscreen="" frameborder="0" height="360" src="' + url + '" width="640">';
 });
+
+// 19.1. Оборачиваем YouTube iframe в <p style="text-align: center;">
+html = html.replace(/<iframe[^>]+youtube\.com\/embed\/[^>]+><\/iframe>/gi, function(match) {
+    // Проверяем, уже ли обёрнут в <p>
+    return match;
+});
+html = html.replace(/(?:<p[^>]*>)?\s*(<iframe[^>]+youtube\.com\/embed\/[^>]+><\/iframe>)\s*(?:<\/p>)?/gi, '<p style="text-align: center;">$1</p>');
 
         // 20. Автоматическая расстановка знаков препинания в списках
         html = html.replace(/<(ul|ol)>([\s\S]*?)<\/\1>/gi, function(match, tag, content) {
