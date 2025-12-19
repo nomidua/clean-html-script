@@ -1,6 +1,6 @@
 /**
  * Clean HTML Script
- * Version: 0.92
+ * Version: 0.93
  * Last Updated: 2025-12-19
  */
 
@@ -19,7 +19,7 @@
         if (typeof CKEDITOR !== 'undefined' && CKEDITOR.instances && CKEDITOR.instances.message) {
             var ckInstance = CKEDITOR.instances.message;
             html = ckInstance.getData();
-            
+
             if (html) {
                 isCKEditor = true;
                 originalLength = html.length;
@@ -28,10 +28,10 @@
 
         // 2. Если CKEditor не нашли, пробуем найти textarea по имени/id
         if (!isCKEditor) {
-            editor = document.querySelector('textarea[name="message"]') || 
-                     document.querySelector('textarea#message') ||
-                     document.querySelector('textarea.manFl');
-            
+            editor = document.querySelector('textarea[name="message"]') ||
+                document.querySelector('textarea#message') ||
+                document.querySelector('textarea.manFl');
+
             if (editor && editor.value) {
                 html = editor.value;
                 originalLength = html.length;
@@ -196,37 +196,30 @@
         html = html.replace(/(&nbsp;)+/g, ' ');
         html = html.replace(/  +/g, ' ');
 
-// 19. Очистка и форматирование YouTube iframe (шаг 1: очистка атрибутов)
-html = html.replace(/<iframe[^>]*(?:src|data-src)="[^"]*(?:youtube\.com\/embed\/|youtu\.be\/)[^"]*"[^>]*>/gi, function(match) {
-    // Извлекаем URL из src или data-src (приоритет data-src)
-    var dataSrcMatch = match.match(/data-src="([^"]*)"/i);
-    var srcMatch = match.match(/src="([^"]*)"/i);
-    var url = (dataSrcMatch && dataSrcMatch[1]) || (srcMatch && srcMatch[1]);
-    
-    if (!url || !/youtube\.com\/embed\/|youtu\.be\//i.test(url)) return match;
-    
-    // Очищаем URL - убираем всё после ?
-    url = url.split('?')[0];
-    
-    // Нормализуем youtu.be -> youtube.com/embed/
-    if (url.indexOf('youtu.be/') !== -1) {
-        var videoId = url.split('youtu.be/')[1].split('?')[0].split('&')[0];
-        url = 'https://www.youtube.com/embed/' + videoId;
-    }
-    
-    // Формируем чистый iframe
-    return '<iframe allowfullscreen="" frameborder="0" height="360" src="' + url + '" width="640">';
-});
+        // 19. Очистка и форматирование YouTube iframe (шаг 1: очистка атрибутов)
+        html = html.replace(/<iframe[^>]*(?:src|data-src)="[^"]*(?:youtube\.com\/embed\/|youtu\.be\/)[^"]*"[^>]*>/gi, function(match) {
+            // Извлекаем URL из src или data-src (приоритет data-src)
+            var dataSrcMatch = match.match(/data-src="([^"]*)"/i);
+            var srcMatch = match.match(/src="([^"]*)"/i);
+            var url = (dataSrcMatch && dataSrcMatch[1]) || (srcMatch && srcMatch[1]);
 
-// 19.1. Оборачиваем YouTube iframe в <p style="text-align: center;">
-html = html.replace(/(<p[^>]*>)?(\s*)(<iframe[^>]+youtube\.com\/embed\/[^>]+><\/iframe>)(\s*)(<\/p>)?/gi, function(match, openP, space1, iframe, space2, closeP) {
-    // Если уже есть <p> с style="text-align: center;" - оставляем как есть
-    if (openP && /style="[^"]*text-align:\s*center/i.test(openP)) {
-        return match;
-    }
-    // Оборачиваем в новый <p> со стилем
-    return '<p style="text-align: center;">' + iframe + '</p>';
-});
+            if (!url || !/youtube\.com\/embed\/|youtu\.be\//i.test(url)) return match;
+
+            // Очищаем URL - убираем всё после ?
+            url = url.split('?')[0];
+
+            // Нормализуем youtu.be -> youtube.com/embed/
+            if (url.indexOf('youtu.be/') !== -1) {
+                var videoId = url.split('youtu.be/')[1].split('?')[0].split('&')[0];
+                url = 'https://www.youtube.com/embed/' + videoId;
+            }
+
+            // Формируем чистый iframe
+            return '<iframe allowfullscreen="" frameborder="0" height="360" src="' + url + '" width="640">';
+        });
+
+        // 19.1. Добавляем style к <p> с YouTube iframe
+        html = html.replace(/<p>(<iframe[^>]+youtube\.com\/embed\/[^>]+><\/iframe>)<\/p>/gi, '<p style="text-align: center;">$1</p>');
 
         // 20. Автоматическая расстановка знаков препинания в списках
         html = html.replace(/<(ul|ol)>([\s\S]*?)<\/\1>/gi, function(match, tag, content) {
@@ -272,8 +265,12 @@ html = html.replace(/(<p[^>]*>)?(\s*)(<iframe[^>]+youtube\.com\/embed\/[^>]+><\/
             editor.setValue(html);
         } else {
             editor.value = html;
-            editor.dispatchEvent(new Event('input', { bubbles: true }));
-            editor.dispatchEvent(new Event('change', { bubbles: true }));
+            editor.dispatchEvent(new Event('input', {
+                bubbles: true
+            }));
+            editor.dispatchEvent(new Event('change', {
+                bubbles: true
+            }));
         }
 
         // Показываем результат
