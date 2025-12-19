@@ -196,7 +196,31 @@
         html = html.replace(/(&nbsp;)+/g, ' ');
         html = html.replace(/  +/g, ' ');
 
-        // 19. Автоматическая расстановка знаков препинания в списках
+        // 19. Очистка и форматирование YouTube iframe
+html = html.replace(/<p>(\s*)<iframe[^>]*src="[^"]*(?:youtube\.com\/embed\/|youtu\.be\/)[^"]*"[^>]*><\/iframe>(\s*)<\/p>/gi, function(match) {
+    // Извлекаем URL из src или data-src
+    var srcMatch = match.match(/(?:data-src|src)="([^"]*)"/i);
+    if (!srcMatch) return match;
+    
+    var url = srcMatch[1];
+    
+    // Проверяем что это YouTube
+    if (!/youtube\.com\/embed\/|youtu\.be\//i.test(url)) return match;
+    
+    // Очищаем URL - убираем всё после ?
+    url = url.split('?')[0];
+    
+    // Нормализуем youtu.be -> youtube.com/embed/
+    if (url.indexOf('youtu.be/') !== -1) {
+        var videoId = url.split('youtu.be/')[1];
+        url = 'https://www.youtube.com/embed/' + videoId;
+    }
+    
+    // Формируем чистый iframe
+    return '<p style="text-align: center;"><iframe allowfullscreen="" frameborder="0" height="360" src="' + url + '" width="640"></iframe></p>';
+});
+
+        // 20. Автоматическая расстановка знаков препинания в списках
         html = html.replace(/<(ul|ol)>([\s\S]*?)<\/\1>/gi, function(match, tag, content) {
             var items = content.match(/<li[^>]*>[\s\S]*?<\/li>/gi);
             if (!items || items.length === 0) return match;
