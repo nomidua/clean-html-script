@@ -99,6 +99,12 @@
         // 1.2. Убираем атрибут bis_size с любым содержимым
         html = html.replace(/\s+bis_size="[^"]*"/gi, '');
 
+        // 1.3. Убираем атрибут target="_new" у ссылок
+        html = html.replace(/\s+target="_new"\s*/gi, ' ');
+
+        // 1.4. Убираем атрибут id из всех тегов
+        html = html.replace(/\s+id="[^"]*"/gi, '');
+
         // 2. Убираем пустые параграфы (включая с &nbsp;)
         html = html.replace(/<p[^>]*>(\s|&nbsp;)*<\/p>/gi, '');
 
