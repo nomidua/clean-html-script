@@ -217,25 +217,25 @@
             // Формируем чистый iframe
             return '<iframe allowfullscreen="" frameborder="0" height="360" src="' + url + '" width="640">';
         });
-	
-	// 19.1. Преобразование YouTube ссылок в iframe
-html = html.replace(/<p>\s*(https?:\/\/(?:www\.)?(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]+)(?:[?&]([^<\s]*))?)?\s*<\/p>/gi, function(match, fullUrl, videoId, params) {
-    if (!videoId) return match;
-    
-    var embedUrl = 'https://www.youtube.com/embed/' + videoId;
-    
-    // Проверяем наличие параметра t= (время)
-    if (params) {
-        var timeMatch = params.match(/[?&]t=(\d+)s?/i);
-        if (timeMatch) {
-            var seconds = timeMatch[1];
-            embedUrl += '?start=' + seconds;
-        }
-    }
-    
-    return '<p style="text-align: center;"><iframe allowfullscreen="" frameborder="0" height="360" src="' + embedUrl + '" width="640"></iframe></p>';
-});
-        
+
+        // 19.1. Преобразование YouTube ссылок в iframe
+        html = html.replace(/<p>\s*(https?:\/\/(?:www\.)?(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]+)(?:[?&]([^<\s]*))?)?\s*<\/p>/gi, function(match, fullUrl, videoId, params) {
+            if (!videoId) return match;
+
+            var embedUrl = 'https://www.youtube.com/embed/' + videoId;
+
+            // Проверяем наличие параметра t= (время)
+            if (params) {
+                var timeMatch = params.match(/[?&]t=(\d+)s?/i);
+                if (timeMatch) {
+                    var seconds = timeMatch[1];
+                    embedUrl += '?start=' + seconds;
+                }
+            }
+
+            return '<p style="text-align: center;"><iframe allowfullscreen="" frameborder="0" height="360" src="' + embedUrl + '" width="640"></iframe></p>';
+        });
+
         // 20. Автоматическая расстановка знаков препинания в списках
         html = html.replace(/<(ul|ol)>([\s\S]*?)<\/\1>/gi, function(match, tag, content) {
             var items = content.match(/<li[^>]*>[\s\S]*?<\/li>/gi);
