@@ -1,6 +1,6 @@
 /**
  * Clean HTML Script
- * Version: 0.931
+ * Version: 0.932
  * Last Updated: 2025-12-19
  */
 
@@ -219,8 +219,8 @@
         });
 
         // 19.1. Добавляем style к <p> с YouTube iframe
-        html = html.replace(/<p>(<iframe[^>]+youtube\.com\/embed\/[^>]+><\/iframe>)<\/p>/gi, '<p style="text-align: center;">$1</p>');
-
+        html = html.replace(/<p>\s*(<iframe[^>]+youtube\.com\/embed\/[^>]+><\/iframe>)\s*<\/p>/gi, '<p style="text-align: center;">$1</p>');
+        
         // 20. Автоматическая расстановка знаков препинания в списках
         html = html.replace(/<(ul|ol)>([\s\S]*?)<\/\1>/gi, function(match, tag, content) {
             var items = content.match(/<li[^>]*>[\s\S]*?<\/li>/gi);
