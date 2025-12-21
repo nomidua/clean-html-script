@@ -124,6 +124,9 @@
         // 9. Убираем пустые div
         html = html.replace(/<div[^>]*>(\s|&nbsp;)*<\/div>/gi, '');
 
+        // 9.1. Удаляем <b id="..."> из Google Docs (сохраняя содержимое)
+        html = html.replace(/<b\s+id="[^"]*"[^>]*>([\s\S]*?)<\/b>/gi, '$1');
+
         // 10. Удаляем все <div> и <span> (сохраняя содержимое)
         html = html.replace(/<div[^>]*>/gi, '');
         html = html.replace(/<\/div>/gi, '');
