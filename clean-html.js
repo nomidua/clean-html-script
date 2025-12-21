@@ -1,7 +1,16 @@
 /**
  * Clean HTML Script
- * Version: 0.941
- * Last Updated: 2025-12-19
+ * Version: 1.0 (Reorganized)
+ * Updated: 2025-12-21
+ * 
+ * Порядок выполнения:
+ * 1. Удаление атрибутов
+ * 2. Очистка тегов
+ * 3. Удаление style/class
+ * 4. Форматирование
+ * 5. Преобразования (YouTube, списки)
+ * 6. Добавление атрибутов
+ * 7. Финальная обработка
  */
 
 (function() {
@@ -15,23 +24,21 @@
         var html = '';
         var originalLength = 0;
 
-        // 1. Пробуем найти CKEditor (визуальный редактор)
+        // Поиск редактора (CKEditor, textarea, CodeMirror)
         if (typeof CKEDITOR !== 'undefined' && CKEDITOR.instances && CKEDITOR.instances.message) {
             var ckInstance = CKEDITOR.instances.message;
             html = ckInstance.getData();
-
             if (html) {
                 isCKEditor = true;
                 originalLength = html.length;
             }
         }
 
-        // 2. Если CKEditor не нашли, пробуем найти textarea по имени/id
         if (!isCKEditor) {
-            editor = document.querySelector('textarea[name="message"]') ||
-                document.querySelector('textarea#message') ||
-                document.querySelector('textarea.manFl');
-
+            editor = document.querySelector('textarea[name="message"]') || 
+                     document.querySelector('textarea#message') ||
+                     document.querySelector('textarea.manFl');
+            
             if (editor && editor.value) {
                 html = editor.value;
                 originalLength = html.length;
@@ -40,11 +47,8 @@
             }
         }
 
-        // 3. Проверяем, есть ли CodeMirror
         if (!isCKEditor && !editor) {
             var activeElement = document.activeElement;
-
-            // Ищем CodeMirror
             if (activeElement && activeElement.closest) {
                 var cmWrapper = activeElement.closest('.CodeMirror');
                 if (cmWrapper && cmWrapper.CodeMirror) {
@@ -53,7 +57,6 @@
                 }
             }
 
-            // Если не нашли через активный элемент, ищем все CodeMirror на странице
             if (!editor) {
                 var allCM = document.querySelectorAll('.CodeMirror');
                 for (var i = 0; i < allCM.length; i++) {
@@ -71,7 +74,6 @@
             }
         }
 
-        // 4. Если ничего не нашли - пробуем activeElement как textarea
         if (!isCKEditor && !isCodeMirror && !editor) {
             editor = document.activeElement;
             if (editor && editor.tagName && editor.tagName.toLowerCase() === 'textarea' && editor.value) {
@@ -88,74 +90,76 @@
             return;
         }
 
-        // ===== НАЧАЛО ОЧИСТКИ =====
+        // ===== БЛОК 1: УДАЛЕНИЕ АТРИБУТОВ =====
 
-        // 1. Убираем атрибуты dir="ltr"
+        // 1. Убираем атрибут dir="ltr"
         html = html.replace(/\s*dir="ltr"/gi, '');
 
-        // 1.1. Убираем атрибуты aria-level с любыми цифрами
+        // 2. Убираем атрибут aria-level
         html = html.replace(/\s*aria-level="\d+"/gi, '');
 
-        // 1.2. Убираем атрибут bis_size с любым содержимым
+        // 3. Убираем атрибут bis_size
         html = html.replace(/\s+bis_size="[^"]*"/gi, '');
 
-        // 1.3. Убираем атрибут target="_new" у ссылок
+        // 4. Убираем атрибут target="_new"
         html = html.replace(/\s+target="_new"\s*/gi, ' ');
 
-        // 1.4. Убираем атрибут id из всех тегов
+        // 5. Убираем атрибут id
         html = html.replace(/\s+id="[^"]*"/gi, '');
 
-        // 2. Убираем пустые параграфы (включая с &nbsp;)
+        // 6. Убираем все data-* атрибуты
+        html = html.replace(/\s+data-[a-z-]+="[^"]*"/gi, '');
+
+        // 7. Удаляем теги <font>
+        html = html.replace(/<\/?font[^>]*>/gi, '');
+
+        // ===== БЛОК 2: ОЧИСТКА ПУСТЫХ ТЕГОВ =====
+
+        // 8. Убираем пустые параграфы
         html = html.replace(/<p[^>]*>(\s|&nbsp;)*<\/p>/gi, '');
 
-        // 3. Убираем пустые li (включая с &nbsp;)
-        html = html.replace(/<li[^>]*>(\s|&nbsp;)*<\/li>/gi, '');
+        // 9. Убираем пустые div
+        html = html.replace(/<div[^>]*>(\s|&nbsp;)*<\/div>/gi, '');
 
-        // 4. Убираем пустые ul
-        html = html.replace(/<ul[^>]*>\s*<\/ul>/gi, '');
+        // 10. Удаляем все <div> и <span> (сохраняя содержимое)
+        html = html.replace(/<div[^>]*>/gi, '');
+        html = html.replace(/<\/div>/gi, '');
+        html = html.replace(/<span[^>]*>/gi, '');
+        html = html.replace(/<\/span>/gi, '');
 
-        // 5. Убираем пустые ol
-        html = html.replace(/<ol[^>]*>\s*<\/ol>/gi, '');
+        // 11. Удаляем теги <section>
+        html = html.replace(/<section[^>]*>/gi, '');
+        html = html.replace(/<\/section>/gi, '');
 
-        // 6. Убираем <p> внутри <li>
-        html = html.replace(/<li>\s*<p>/gi, '<li>');
-        html = html.replace(/<\/p>\s*<\/li>/gi, '</li>');
+        // ===== БЛОК 3: УДАЛЕНИЕ STYLE/CLASS =====
 
-        // 7. Убираем style атрибуты
+        // 12. Защита style у параграфов с $IMAGE$ (добавляем временно)
+        html = html.replace(/<p>\$IMAGE(\d+)\$<\/p>/gi, function(match, num) {
+            return '<p style="text-align: center;">$IMAGE' + num + '$</p>';
+        });
+
+        // 13. Удаляем все style атрибуты
         html = html.replace(/\s*style="[^"]*"/gi, '');
 
-        // 7.1 Добавляем style="text-align: center;" для параграфов с $IMAGE$
-        html = html.replace(/<p>\$IMAGE(\d+)\$<\/p>/gi, '<p style="text-align: center;">$IMAGE$1$</p>');
+        // 14. Возвращаем style для $IMAGE$
+        html = html.replace(/<p>\$IMAGE(\d+)\$<\/p>/gi, function(match, num) {
+            return '<p style="text-align: center;">$IMAGE' + num + '$</p>';
+        });
 
-        // 8. Убираем class атрибуты, НО не у <img>
+        // 15. Удаляем class (защищая <img>)
         html = html.replace(/(<img[^>]*)\s+class="([^"]*)"/gi, '$1 __PROTECTED_CLASS__="$2"');
         html = html.replace(/\s*class="[^"]*"/gi, '');
         html = html.replace(/__PROTECTED_CLASS__="/gi, 'class="');
 
-        // 8.1 Убираем конкретные ненужные стили
-        html = html.replace(/\s+style="text-align:\s*justify;?"/gi, '');
-        html = html.replace(/\s+style="text-decoration:\s*none;?"/gi, '');
+        // ===== БЛОК 4: ФОРМАТИРОВАНИЕ ТЕКСТА =====
 
-        // 8.2 Убираем style="text-align: center" только в тегах БЕЗ $IMAGE$
-        html = html.replace(/(<[^>]+)style="text-align:\s*center;?"([^>]*>(?!\$IMAGE)[^<]*<\/)/gi, '$1$2');
-
-        // 9. Добавляем style к h2
-        html = html.replace(/<h2>/gi, '<h2 style="text-align: center;">');
-
-        // 9.1. Убираем <strong> и <b> внутри заголовков h2, h3, h4
-        html = html.replace(/<(h[234][^>]*)><strong>(.*?)<\/strong><\/(h[234])>/gi, '<$1>$2</$3>');
-        html = html.replace(/<(h[234][^>]*)><b>(.*?)<\/b><\/(h[234])>/gi, '<$1>$2</$3>');
-
-        // 10. Убираем пробел перед процентами
+        // 16. Убираем пробел перед процентами
         html = html.replace(/(\d+)\s+%/g, '$1%');
 
-        // 11. Чистим множественные пробелы внутри текста
+        // 17. Чистим множественные пробелы
         html = html.replace(/[ \t]+/g, ' ');
 
-        // 12. Форматируем код с переносами строк
-        html = html.replace(/></g, '>\n<');
-
-        // 13. Работа с тире
+        // 18. Работа с тире
         html = html.replace(/&mdash;/g, '—');
         html = html.replace(/&ndash;/g, '–');
         html = html.replace(/(\d)\s*—\s*(\d)/g, '$1-$2');
@@ -164,67 +168,49 @@
         html = html.replace(/\s+–\s+/g, ' &mdash; ');
         html = html.replace(/\s+—\s+/g, ' &mdash; ');
 
-        // 14. Удаляем пустые div (включая с &nbsp;)
-        html = html.replace(/<div[^>]*>(\s|&nbsp;)*<\/div>/gi, '');
-
-        // 14.1. Удаляем все теги <div> и <span>, но сохраняем содержимое
-        html = html.replace(/<div[^>]*>/gi, '');
-        html = html.replace(/<\/div>/gi, '');
-        html = html.replace(/<span[^>]*>/gi, '');
-        html = html.replace(/<\/span>/gi, '');
-
-        // 15. Удаляем мусорные data-атрибуты
-        html = html.replace(/\s+data-start="\d+"/gi, '');
-        html = html.replace(/\s+data-end="\d+"/gi, '');
-
-        // 16. Удаляем теги <section>, но сохраняем содержимое
-        html = html.replace(/<section[^>]*>/gi, '');
-        html = html.replace(/<\/section>/gi, '');
-
-        // 17. Очистка таблиц
-        html = html.replace(/<table[^>]*>/gi, '<table style="width:100%;">');
-        html = html.replace(/<thead[^>]*>/gi, '<thead>');
-        html = html.replace(/<th[^>]*>/gi, '<th>');
-        html = html.replace(/<tbody[^>]*>/gi, '<tbody>');
-        html = html.replace(/<tr[^>]*>/gi, '<tr>');
-        html = html.replace(/<td[^>]*>/gi, '<td>');
-
-        // 18. Очистка пробелов и &nbsp;
+        // 19. Очистка &nbsp;
         html = html.replace(/&nbsp;<\//g, '</');
         html = html.replace(/\s&nbsp;/g, ' ');
         html = html.replace(/&nbsp;\s/g, ' ');
         html = html.replace(/(&nbsp;)+/g, ' ');
-        html = html.replace(/  +/g, ' ');
+        html = html.replace(/ +/g, ' ');
 
-        // 19. Очистка и форматирование YouTube iframe (шаг 1: очистка атрибутов)
+        // 20. Очистка пробелов в ссылках
+        html = html.replace(/(<a\s[^>]*>)\s+/gi, '$1');
+        html = html.replace(/\s+<\/a>/gi, '</a>');
+        html = html.replace(/&nbsp;<a\s/gi, ' <a ');
+        html = html.replace(/<\/a>&nbsp;/gi, '</a> ');
+        html = html.replace(/([а-яёА-ЯЁa-zA-Z0-9])<a\s/gi, '$1 <a ');
+        html = html.replace(/<\/a>([а-яёА-ЯЁa-zA-Z0-9])/gi, '</a> $1');
+        html = html.replace(/([.,!?;:])<a\s/gi, '$1 <a ');
+        html = html.replace(/<\/a>([.,!?;:])/gi, '</a>$1 ');
+
+        // ===== БЛОК 5: ПРЕОБРАЗОВАНИЯ =====
+
+        // 21. Очистка YouTube iframe
         html = html.replace(/<iframe[^>]*(?:src|data-src)="[^"]*(?:youtube\.com\/embed\/|youtu\.be\/)[^"]*"[^>]*>/gi, function(match) {
-            // Извлекаем URL из src или data-src (приоритет data-src)
             var dataSrcMatch = match.match(/data-src="([^"]*)"/i);
             var srcMatch = match.match(/src="([^"]*)"/i);
             var url = (dataSrcMatch && dataSrcMatch[1]) || (srcMatch && srcMatch[1]);
 
             if (!url || !/youtube\.com\/embed\/|youtu\.be\//i.test(url)) return match;
 
-            // Очищаем URL - убираем всё после ?
             url = url.split('?')[0];
 
-            // Нормализуем youtu.be -> youtube.com/embed/
             if (url.indexOf('youtu.be/') !== -1) {
                 var videoId = url.split('youtu.be/')[1].split('?')[0].split('&')[0];
                 url = 'https://www.youtube.com/embed/' + videoId;
             }
 
-            // Формируем чистый iframe
             return '<iframe allowfullscreen="" frameborder="0" height="360" src="' + url + '" width="640">';
         });
 
-        // 19.1. Преобразование YouTube ссылок в iframe
+        // 22. Преобразование YouTube ссылок в iframe
         html = html.replace(/<p>\s*(https?:\/\/(?:www\.)?(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]+)(?:[?&]([^<\s]*))?)?\s*<\/p>/gi, function(match, fullUrl, videoId, params) {
             if (!videoId) return match;
 
             var embedUrl = 'https://www.youtube.com/embed/' + videoId;
 
-            // Проверяем наличие параметра t= (время)
             if (params) {
                 var timeMatch = params.match(/[?&]t=(\d+)s?/i);
                 if (timeMatch) {
@@ -236,7 +222,82 @@
             return '<p style="text-align: center;"><iframe allowfullscreen="" frameborder="0" height="360" src="' + embedUrl + '" width="640"></iframe></p>';
         });
 
-        // 20. Автоматическая расстановка знаков препинания в списках
+        // 23. Преобразование <dl> в <ul>
+        html = html.replace(/<dl[^>]*>([\s\S]*?)<\/dl>/gi, function(match, content) {
+            var items = [];
+            
+            content = content.replace(/<\/?(?:b|strong)>/gi, '');
+            
+            var dtList = [];
+            var ddList = [];
+            
+            var dtRegex = /<dt[^>]*>([\s\S]*?)<\/dt>/gi;
+            var dtMatch;
+            while ((dtMatch = dtRegex.exec(content)) !== null) {
+                dtList.push(dtMatch[1].trim());
+            }
+            
+            var ddRegex = /<dd[^>]*>([\s\S]*?)<\/dd>/gi;
+            var ddMatch;
+            while ((ddMatch = ddRegex.exec(content)) !== null) {
+                ddList.push(ddMatch[1].trim());
+            }
+            
+            if (dtList.length === 0) return '';
+            
+            for (var i = 0; i < dtList.length; i++) {
+                var name = dtList[i];
+                var quantity = ddList[i] || '';
+                
+                if (quantity) {
+                    items.push('<li>' + name + ' &mdash; ' + quantity + '</li>');
+                } else {
+                    items.push('<li>' + name + '</li>');
+                }
+            }
+            
+            return '<ul>\n' + items.join('\n') + '\n</ul>\n<p></p>';
+        });
+
+        // 24. Объединяем соседние <ul>
+        html = html.replace(/<\/ul>\s*<p><\/p>\s*<ul>/gi, '');
+
+        // 25. Очистка списков - пустые <li>
+        html = html.replace(/<li[^>]*>(\s|&nbsp;)*<\/li>/gi, '');
+
+        // 26. Очистка списков - пустые <ul>
+        html = html.replace(/<ul[^>]*>\s*<\/ul>/gi, '');
+
+        // 27. Очистка списков - пустые <ol>
+        html = html.replace(/<ol[^>]*>\s*<\/ol>/gi, '');
+
+        // 28. Убираем <p> внутри <li>
+        html = html.replace(/<li>\s*<p>/gi, '<li>');
+        html = html.replace(/<\/p>\s*<\/li>/gi, '</li>');
+
+        // ===== БЛОК 6: ДОБАВЛЕНИЕ АТРИБУТОВ =====
+
+        // 29. Добавляем style к <h2>
+        html = html.replace(/<h2>/gi, '<h2 style="text-align: center;">');
+
+        // 30. Убираем <strong> и <b> из заголовков
+        html = html.replace(/<(h[234][^>]*)><strong>(.*?)<\/strong><\/(h[234])>/gi, '<$1>$2</$3>');
+        html = html.replace(/<(h[234][^>]*)><b>(.*?)<\/b><\/(h[234])>/gi, '<$1>$2</$3>');
+
+        // 31. Очистка таблиц и добавление style
+        html = html.replace(/<table[^>]*>/gi, '<table style="width:100%;">');
+        html = html.replace(/<thead[^>]*>/gi, '<thead>');
+        html = html.replace(/<th[^>]*>/gi, '<th>');
+        html = html.replace(/<tbody[^>]*>/gi, '<tbody>');
+        html = html.replace(/<tr[^>]*>/gi, '<tr>');
+        html = html.replace(/<td[^>]*>/gi, '<td>');
+
+        // ===== БЛОК 7: ФИНАЛЬНАЯ ОБРАБОТКА =====
+
+        // 32. Форматируем код с переносами строк
+        html = html.replace(/></g, '>\n<');
+
+        // 33. Автоматическая расстановка знаков препинания в списках
         html = html.replace(/<(ul|ol)>([\s\S]*?)<\/\1>/gi, function(match, tag, content) {
             var items = content.match(/<li[^>]*>[\s\S]*?<\/li>/gi);
             if (!items || items.length === 0) return match;
@@ -280,12 +341,8 @@
             editor.setValue(html);
         } else {
             editor.value = html;
-            editor.dispatchEvent(new Event('input', {
-                bubbles: true
-            }));
-            editor.dispatchEvent(new Event('change', {
-                bubbles: true
-            }));
+            editor.dispatchEvent(new Event('input', { bubbles: true }));
+            editor.dispatchEvent(new Event('change', { bubbles: true }));
         }
 
         // Показываем результат
