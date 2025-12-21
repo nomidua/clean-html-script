@@ -110,6 +110,9 @@
         // 6. Убираем все data-* атрибуты
         html = html.replace(/\s+data-[a-z-]+="[^"]*"/gi, '');
 
+        // 6.1 Убираем атрибут role="presentation"
+        html = html.replace(/\s+role="presentation"/gi, '');
+
         // 7. Удаляем теги <font>
         html = html.replace(/<\/?font[^>]*>/gi, '');
 
