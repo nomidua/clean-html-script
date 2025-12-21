@@ -1,6 +1,6 @@
 /**
  * Clean HTML Script
- * Version: 1.01 (Reorganized)
+ * Version: 1.02 (Reorganized)
  * Updated: 2025-12-21
  * 
  * Порядок выполнения:
