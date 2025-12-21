@@ -1,6 +1,6 @@
 /**
  * Clean HTML Script
- * Version: 1.02 (Reorganized)
+ * Version: 1.03 (Reorganized)
  * Updated: 2025-12-21
  * 
  * Порядок выполнения:
@@ -123,9 +123,11 @@
 
         // 9. Убираем пустые div
         html = html.replace(/<div[^>]*>(\s|&nbsp;)*<\/div>/gi, '');
-        
-        // 9.1. Удаляем <b id="..."> и содержимое <span> внутри (Google Docs специфика)
-        html = html.replace(/<b\s+id="[^"]*"[^>]*>\s*<span[^>]*>([\s\S]*?)<\/span>\s*<\/b>/gi, '$1');
+
+        // 9.1. Удаляем пустые <b> и <b> вокруг других тегов
+        for (var i = 0; i < 5; i++) {
+        html = html.replace(/<b[^>]*>\s*<\/b>/gi, '');
+        html = html.replace(/<b[^>]*>\s*(<[^>]+>.*?<\/[^>]+>)\s*<\/b>/gi, '$1');}
 
         // 10. Удаляем все <div> и <span> (сохраняя содержимое)
         html = html.replace(/<div[^>]*>/gi, '');
