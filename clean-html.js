@@ -1,7 +1,7 @@
 /**
  * Clean HTML Script
- * Version: 1.03 (Reorganized)
- * Updated: 2025-12-21
+ * Version: 1.1 (Reorganized)
+ * Updated: 2025-12-23
  * 
  * Порядок выполнения:
  * 1. Удаление атрибутов
@@ -120,6 +120,10 @@
 
         // 8. Убираем пустые параграфы
         html = html.replace(/<p[^>]*>(\s|&nbsp;)*<\/p>/gi, '');
+		
+		// 8.1. Удаляем параграфы и div с рекламным мусором
+		html = html.replace(/<p[^>]*>\s*(ad|ads|читайте\s+также:?)\s*<\/p>/gi, '');
+		html = html.replace(/<div[^>]*>\s*(ad|ads|читайте\s+також:?)\s*<\/div>/gi, '');
 
         // 9. Убираем пустые div
         html = html.replace(/<div[^>]*>(\s|&nbsp;)*<\/div>/gi, '');
@@ -284,13 +288,37 @@
         html = html.replace(/<\/p>\s*<\/li>/gi, '</li>');
 
         // ===== БЛОК 6: ДОБАВЛЕНИЕ АТРИБУТОВ =====
+	
+	// 29. Конвертируем <h1> в <h2> (SEO: только один H1 на странице)
+	html = html.replace(/<h1([^>]*)>/gi, '<h2$1>');
+	html = html.replace(/<\/h1>/gi, '</h2>');
 
-        // 29. Добавляем style к <h2>
+        // 29.1 Добавляем style к <h2>
         html = html.replace(/<h2>/gi, '<h2 style="text-align: center;">');
+	
+	// 29.2. Удаляем точку и запятую в конце заголовков h2, h3, h4 UP+
+	html = html.replace(/[.,]\s*<\/(h[234])>/gi, '</$1>');
 
-        // 30. Убираем <strong> и <b> из заголовков
-        html = html.replace(/<(h[234][^>]*)><strong>(.*?)<\/strong><\/(h[234])>/gi, '<$1>$2</$3>');
-        html = html.replace(/<(h[234][^>]*)><b>(.*?)<\/b><\/(h[234])>/gi, '<$1>$2</$3>');
+// 30. Убираем <strong> и <b> из заголовков h2, h3, h4
+// Защищаем содержимое заголовков
+var h2List = [];
+var h3List = [];
+var h4List = [];
+
+html = html.replace(/<h2([^>]*)>([\s\S]*?)<\/h2>/gi, function(match, attrs, content) {
+    content = content.replace(/<\/?strong>/gi, '').replace(/<\/?b>/gi, '');
+    return '<h2' + attrs + '>' + content + '</h2>';
+});
+
+html = html.replace(/<h3([^>]*)>([\s\S]*?)<\/h3>/gi, function(match, attrs, content) {
+    content = content.replace(/<\/?strong>/gi, '').replace(/<\/?b>/gi, '');
+    return '<h3' + attrs + '>' + content + '</h3>';
+});
+
+html = html.replace(/<h4([^>]*)>([\s\S]*?)<\/h4>/gi, function(match, attrs, content) {
+    content = content.replace(/<\/?strong>/gi, '').replace(/<\/?b>/gi, '');
+    return '<h4' + attrs + '>' + content + '</h4>';
+});
 
         // 31. Очистка таблиц и добавление style
         html = html.replace(/<table[^>]*>/gi, '<table style="width:100%;">');
