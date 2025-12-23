@@ -1,6 +1,6 @@
 /**
  * Clean HTML Script
- * Version: 1.1 (Reorganized)
+ * Version: 1.12 (Reorganized)
  * Updated: 2025-12-23
  * 
  * Порядок выполнения:
@@ -35,10 +35,10 @@
         }
 
         if (!isCKEditor) {
-            editor = document.querySelector('textarea[name="message"]') || 
-                     document.querySelector('textarea#message') ||
-                     document.querySelector('textarea.manFl');
-            
+            editor = document.querySelector('textarea[name="message"]') ||
+                document.querySelector('textarea#message') ||
+                document.querySelector('textarea.manFl');
+
             if (editor && editor.value) {
                 html = editor.value;
                 originalLength = html.length;
@@ -120,18 +120,19 @@
 
         // 8. Убираем пустые параграфы
         html = html.replace(/<p[^>]*>(\s|&nbsp;)*<\/p>/gi, '');
-		
-		// 8.1. Удаляем параграфы и div с рекламным мусором
-		html = html.replace(/<p[^>]*>\s*(ad|ads|читайте\s+также:?)\s*<\/p>/gi, '');
-		html = html.replace(/<div[^>]*>\s*(ad|ads|читайте\s+також:?)\s*<\/div>/gi, '');
+
+        // 8.1. Удаляем параграфы и div с рекламным мусором
+        html = html.replace(/<p[^>]*>\s*(ad|ads|читайте\s+также:?)\s*<\/p>/gi, '');
+        html = html.replace(/<div[^>]*>\s*(ad|ads|читайте\s+також:?)\s*<\/div>/gi, '');
 
         // 9. Убираем пустые div
         html = html.replace(/<div[^>]*>(\s|&nbsp;)*<\/div>/gi, '');
 
         // 9.1. Удаляем пустые <b> и <b> вокруг других тегов
         for (var i = 0; i < 5; i++) {
-        html = html.replace(/<b[^>]*>\s*<\/b>/gi, '');
-        html = html.replace(/<b[^>]*>\s*(<[^>]+>.*?<\/[^>]+>)\s*<\/b>/gi, '$1');}
+            html = html.replace(/<b[^>]*>\s*<\/b>/gi, '');
+            html = html.replace(/<b[^>]*>\s*(<[^>]+>.*?<\/[^>]+>)\s*<\/b>/gi, '$1');
+        }
 
         // 10. Удаляем все <div> и <span> (сохраняя содержимое)
         html = html.replace(/<div[^>]*>/gi, '');
@@ -187,7 +188,7 @@
         html = html.replace(/(&nbsp;)+/g, ' ');
         html = html.replace(/ +/g, ' ');
 
-        // 20. Очистка пробелов в ссылках
+        // 20. Очистка пробелов в ссылках, предложениях и абзацах
         html = html.replace(/(<a\s[^>]*>)\s+/gi, '$1');
         html = html.replace(/\s+<\/a>/gi, '</a>');
         html = html.replace(/&nbsp;<a\s/gi, ' <a ');
@@ -196,6 +197,31 @@
         html = html.replace(/<\/a>([а-яёА-ЯЁa-zA-Z0-9])/gi, '</a> $1');
         html = html.replace(/([.,!?;:])<a\s/gi, '$1 <a ');
         html = html.replace(/<\/a>([.,!?;:])/gi, '</a>$1 ');
+
+        // 20.1. Убираем пробел (обычный и &nbsp;) перед знаками препинания
+        html = html.replace(/(\s|&nbsp;)+([.,!?;:])/g, '$2');
+
+        // 20.2. Добавляем пробел после знаков препинания (кроме ;)
+        html = html.replace(/([.,!?:])([а-яёА-ЯЁa-zA-Zа-щА-ЩЬьЮюЯяЇїІіЄєҐґ0-9])/g, '$1 $2');
+
+        // 20.3. Убираем пробелы внутри кавычек (только ёлочки и лапки)
+        // Убираем после открывающих: « „
+        html = html.replace(/&laquo;(\s|&nbsp;)+/g, '&laquo;');
+        html = html.replace(/«(\s|&nbsp;)+/g, '«');
+        html = html.replace(/&bdquo;(\s|&nbsp;)+/g, '&bdquo;');
+        html = html.replace(/„(\s|&nbsp;)+/g, '„');
+
+        // Убираем перед закрывающими: » "
+        html = html.replace(/(\s|&nbsp;)+&raquo;/g, '&raquo;');
+        html = html.replace(/(\s|&nbsp;)+»/g, '»');
+        html = html.replace(/(\s|&nbsp;)+&ldquo;/g, '&ldquo;');
+        html = html.replace(/(\s|&nbsp;)+"/g, '"');
+
+        // 20.4. Убираем пробел после открывающей скобки
+        html = html.replace(/\((\s|&nbsp;)+/g, '(');
+
+        // 20.4.1 Убираем пробел перед закрывающей скобкой
+        html = html.replace(/(\s|&nbsp;)+\)/g, ')');
 
         // ===== БЛОК 5: ПРЕОБРАЗОВАНИЯ =====
 
@@ -237,37 +263,37 @@
         // 23. Преобразование <dl> в <ul>
         html = html.replace(/<dl[^>]*>([\s\S]*?)<\/dl>/gi, function(match, content) {
             var items = [];
-            
+
             content = content.replace(/<\/?(?:b|strong)>/gi, '');
-            
+
             var dtList = [];
             var ddList = [];
-            
+
             var dtRegex = /<dt[^>]*>([\s\S]*?)<\/dt>/gi;
             var dtMatch;
             while ((dtMatch = dtRegex.exec(content)) !== null) {
                 dtList.push(dtMatch[1].trim());
             }
-            
+
             var ddRegex = /<dd[^>]*>([\s\S]*?)<\/dd>/gi;
             var ddMatch;
             while ((ddMatch = ddRegex.exec(content)) !== null) {
                 ddList.push(ddMatch[1].trim());
             }
-            
+
             if (dtList.length === 0) return '';
-            
+
             for (var i = 0; i < dtList.length; i++) {
                 var name = dtList[i];
                 var quantity = ddList[i] || '';
-                
+
                 if (quantity) {
                     items.push('<li>' + name + ' &mdash; ' + quantity + '</li>');
                 } else {
                     items.push('<li>' + name + '</li>');
                 }
             }
-            
+
             return '<ul>\n' + items.join('\n') + '\n</ul>\n<p></p>';
         });
 
@@ -288,37 +314,37 @@
         html = html.replace(/<\/p>\s*<\/li>/gi, '</li>');
 
         // ===== БЛОК 6: ДОБАВЛЕНИЕ АТРИБУТОВ =====
-	
-	// 29. Конвертируем <h1> в <h2> (SEO: только один H1 на странице)
-	html = html.replace(/<h1([^>]*)>/gi, '<h2$1>');
-	html = html.replace(/<\/h1>/gi, '</h2>');
+
+        // 29. Конвертируем <h1> в <h2> (SEO: только один H1 на странице)
+        html = html.replace(/<h1([^>]*)>/gi, '<h2$1>');
+        html = html.replace(/<\/h1>/gi, '</h2>');
 
         // 29.1 Добавляем style к <h2>
         html = html.replace(/<h2>/gi, '<h2 style="text-align: center;">');
-	
-	// 29.2. Удаляем точку и запятую в конце заголовков h2, h3, h4 UP+
-	html = html.replace(/[.,]\s*<\/(h[234])>/gi, '</$1>');
 
-// 30. Убираем <strong> и <b> из заголовков h2, h3, h4
-// Защищаем содержимое заголовков
-var h2List = [];
-var h3List = [];
-var h4List = [];
+        // 29.2. Удаляем точку и запятую в конце заголовков h2, h3, h4 UP+
+        html = html.replace(/[.,]\s*<\/(h[234])>/gi, '</$1>');
 
-html = html.replace(/<h2([^>]*)>([\s\S]*?)<\/h2>/gi, function(match, attrs, content) {
-    content = content.replace(/<\/?strong>/gi, '').replace(/<\/?b>/gi, '');
-    return '<h2' + attrs + '>' + content + '</h2>';
-});
+        // 30. Убираем <strong> и <b> из заголовков h2, h3, h4
+        // Защищаем содержимое заголовков
+        var h2List = [];
+        var h3List = [];
+        var h4List = [];
 
-html = html.replace(/<h3([^>]*)>([\s\S]*?)<\/h3>/gi, function(match, attrs, content) {
-    content = content.replace(/<\/?strong>/gi, '').replace(/<\/?b>/gi, '');
-    return '<h3' + attrs + '>' + content + '</h3>';
-});
+        html = html.replace(/<h2([^>]*)>([\s\S]*?)<\/h2>/gi, function(match, attrs, content) {
+            content = content.replace(/<\/?strong>/gi, '').replace(/<\/?b>/gi, '');
+            return '<h2' + attrs + '>' + content + '</h2>';
+        });
 
-html = html.replace(/<h4([^>]*)>([\s\S]*?)<\/h4>/gi, function(match, attrs, content) {
-    content = content.replace(/<\/?strong>/gi, '').replace(/<\/?b>/gi, '');
-    return '<h4' + attrs + '>' + content + '</h4>';
-});
+        html = html.replace(/<h3([^>]*)>([\s\S]*?)<\/h3>/gi, function(match, attrs, content) {
+            content = content.replace(/<\/?strong>/gi, '').replace(/<\/?b>/gi, '');
+            return '<h3' + attrs + '>' + content + '</h3>';
+        });
+
+        html = html.replace(/<h4([^>]*)>([\s\S]*?)<\/h4>/gi, function(match, attrs, content) {
+            content = content.replace(/<\/?strong>/gi, '').replace(/<\/?b>/gi, '');
+            return '<h4' + attrs + '>' + content + '</h4>';
+        });
 
         // 31. Очистка таблиц и добавление style
         html = html.replace(/<table[^>]*>/gi, '<table style="width:100%;">');
@@ -377,8 +403,12 @@ html = html.replace(/<h4([^>]*)>([\s\S]*?)<\/h4>/gi, function(match, attrs, cont
             editor.setValue(html);
         } else {
             editor.value = html;
-            editor.dispatchEvent(new Event('input', { bubbles: true }));
-            editor.dispatchEvent(new Event('change', { bubbles: true }));
+            editor.dispatchEvent(new Event('input', {
+                bubbles: true
+            }));
+            editor.dispatchEvent(new Event('change', {
+                bubbles: true
+            }));
         }
 
         // Показываем результат
