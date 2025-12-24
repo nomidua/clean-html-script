@@ -212,7 +212,7 @@
         html = html.replace(/(\s|&nbsp;)+&ldquo;/g, '&ldquo;');
         html = html.replace(/(\s|&nbsp;)+"/g, '"');
 
-        // 20.3. Убираем пробел после открывающей скобки и зыкрывающей
+        // 20.3. Убираем пробел после открывающей скобки и закрывающей
         html = html.replace(/\((\s|&nbsp;)+/g, '(');
         html = html.replace(/(\s|&nbsp;)+\)/g, ')');
 
