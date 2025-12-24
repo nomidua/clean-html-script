@@ -1,6 +1,6 @@
 /**
  * Clean HTML Script
- * Version: 1.24
+ * Version: 1.25
  * Updated: 24.12.2025
  * 
  * Порядок выполнения:
@@ -373,40 +373,77 @@ if (!isCKEditor && !isTinyMCE) {
         // 32. Форматируем код с переносами строк
         html = html.replace(/></g, '>\n<');
 
-        // 33. Автоматическая расстановка знаков препинания в списках
-        html = html.replace(/<(ul|ol)>([\s\S]*?)<\/\1>/gi, function(match, tag, content) {
-            var items = content.match(/<li[^>]*>[\s\S]*?<\/li>/gi);
-            if (!items || items.length === 0) return match;
+// 33. Автоматическая расстановка знаков препинания в списках
+html = html.replace(/<(ul|ol)>([\s\S]*?)<\/\1>/gi, function(match, tag, content) {
+    var items = content.match(/<li[^>]*>[\s\S]*?<\/li>/gi);
+    if (!items || items.length === 0) return match;
 
-            var firstItemText = items[0].replace(/<[^>]+>/g, '').trim();
-            var firstLetter = firstItemText.match(/[а-яёА-ЯЁa-zA-Z]/);
-            if (!firstLetter) return match;
+    var firstItemText = items[0].replace(/<[^>]+>/g, '').trim();
+    var firstLetter = firstItemText.match(/[а-яёА-ЯЁa-zA-Z]/);
+    if (!firstLetter) return match;
 
-            var isUpperCase = firstLetter[0] === firstLetter[0].toUpperCase();
+    var isUpperCase = firstLetter[0] === firstLetter[0].toUpperCase();
 
-            var processedItems = items.map(function(item, index) {
-                var isLast = (index === items.length - 1);
-                if (/[!?]\s*(<\/[^>]+>)*\s*<\/li>$/i.test(item)) {
-                    return item;
-                }
+    // Сокращения С точкой (не удаляем их точку)
+    var abbrWithDot = ['шт', 'ст', 'гл', 'стр', 'ч\\.л', 'ст\\.л', 'т\\.д', 'т\\.п', 'и\\sдр', 'и\\sт', 'напр', 'ср'];
 
-                var cleaned = item;
-                cleaned = cleaned.replace(/(\s|&nbsp;|\.|\;|\,)+\s*<\/li>$/gi, '</li>');
-                cleaned = cleaned.replace(/(\s|&nbsp;|\.|\;|\,)+\s*(<\/a>)/gi, '$2');
+    var processedItems = items.map(function(item, index) {
+        var isLast = (index === items.length - 1);
+        
+        // Не трогаем ! и ?
+        if (/[!?]\s*(<\/[^>]+>)*\s*<\/li>$/i.test(item)) {
+            return item;
+        }
 
-                var punctuation = isUpperCase ? '.' : (isLast ? '.' : ';');
+        var cleaned = item;
+        
+        // Проверяем, заканчивается ли на сокращение с точкой
+        var endsWithAbbrDot = false;
+        for (var i = 0; i < abbrWithDot.length; i++) {
+            var pattern = new RegExp(abbrWithDot[i] + '\\.+\\s*(<\/[^>]+>)*\\s*<\/li>$', 'i');
+            if (pattern.test(cleaned)) {
+                endsWithAbbrDot = true;
+                // Удаляем ЛИШНИЕ точки после сокращения (оставляем одну)
+                var replacePattern = new RegExp('(' + abbrWithDot[i] + ')\\.+(\\s*(<\/[^>]+>)*\\s*<\/li>)$', 'gi');
+                cleaned = cleaned.replace(replacePattern, '$1.$2');
+                break;
+            }
+        }
+        
+        // Удаляем лишние знаки (НО НЕ точку после сокращения!)
+        if (!endsWithAbbrDot) {
+            cleaned = cleaned.replace(/(\s|&nbsp;|\.|\;|\,)+\s*<\/li>$/gi, '</li>');
+        } else {
+            // Если есть сокращение, удаляем только пробелы/запятые/точки с запятой
+            cleaned = cleaned.replace(/(\s|&nbsp;|\;|\,)+\s*<\/li>$/gi, '</li>');
+        }
+        
+        cleaned = cleaned.replace(/(\s|&nbsp;|\.|\;|\,)+\s*(<\/a>)/gi, '$2');
 
-                if (/<\/a>\s*<\/li>$/i.test(cleaned)) {
-                    cleaned = cleaned.replace(/(<\/a>)\s*<\/li>$/i, '$1' + punctuation + '</li>');
-                } else {
-                    cleaned = cleaned.replace(/<\/li>$/i, punctuation + '</li>');
-                }
+        // Определяем нужный знак
+        var punctuation;
+        if (isUpperCase) {
+            punctuation = '.';  // Заглавная → всегда точка
+        } else {
+            punctuation = isLast ? '.' : ';';  // Строчная → ; или .
+        }
 
-                return cleaned;
-            });
+        // Добавляем знак (если его ещё нет)
+        if (/<\/a>\s*<\/li>$/i.test(cleaned)) {
+            cleaned = cleaned.replace(/(<\/a>)\s*<\/li>$/i, '$1' + punctuation + '</li>');
+        } else {
+            // Проверяем, есть ли уже нужный знак
+            var hasCorrectPunctuation = new RegExp('[' + punctuation.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ']\\s*<\/li>$', 'i').test(cleaned);
+            if (!hasCorrectPunctuation) {
+                cleaned = cleaned.replace(/<\/li>$/i, punctuation + '</li>');
+            }
+        }
 
-            return '<' + tag + '>' + processedItems.join('') + '</' + tag + '>';
-        });
+        return cleaned;
+    });
+
+    return '<' + tag + '>' + processedItems.join('') + '</' + tag + '>';
+});
 
         // ===== КОНЕЦ ОЧИСТКИ =====
 
