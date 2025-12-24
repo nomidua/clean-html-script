@@ -1,6 +1,6 @@
 /**
  * Clean HTML Script
- * Version: 1.23
+ * Version: 1.24
  * Updated: 24.12.2025
  * 
  * Порядок выполнения:
@@ -35,30 +35,36 @@
             }
         }
 
-        // ← ДОБАВЛЯЕМ ПОДДЕРЖКУ WORDPRESS TINYMCE
-        if (!isCKEditor && typeof tinyMCE !== 'undefined' && tinyMCE.activeEditor && !tinyMCE.activeEditor.isHidden()) {
-            editor = tinyMCE.activeEditor;
-            html = editor.getContent();
-            if (html) {
-                isTinyMCE = true;
-                originalLength = html.length;
-            }
+// ДОБАВЛЯЕМ ПОДДЕРЖКУ WORDPRESS TINYMCE
+if (!isCKEditor && typeof tinyMCE !== 'undefined') {
+    var activeEditor = tinyMCE.activeEditor;
+    if (!activeEditor || activeEditor.isHidden()) {
+        activeEditor = tinyMCE.get('content');
+    }
+    if (activeEditor && !activeEditor.isHidden()) {
+        editor = activeEditor;
+        html = editor.getContent();
+        if (html) {
+            isTinyMCE = true;
+            originalLength = html.length;
         }
+    }
+}
 
-        // Поиск обычных textarea (для WordPress Text mode и других сайтов)
-        if (!isCKEditor && !isTinyMCE) {
-            editor = document.querySelector('textarea[name="message"]') ||
-                document.querySelector('textarea#message') ||
-                document.querySelector('textarea.manFl') ||
-                document.querySelector('textarea#content');  // ← ДОБАВИЛИ ДЛЯ WORDPRESS
-            
-            if (editor && editor.value) {
-                html = editor.value;
-                originalLength = html.length;
-            } else {
-                editor = null;
-            }
-        }
+// Поиск обычных textarea (для WordPress Text mode и других сайтов)
+if (!isCKEditor && !isTinyMCE) {
+    editor = document.querySelector('textarea[name="message"]') ||
+        document.querySelector('textarea#message') ||
+        document.querySelector('textarea.manFl') ||
+        document.querySelector('textarea#content');
+    
+    if (editor && editor.value) {
+        html = editor.value;
+        originalLength = html.length;
+    } else {
+        editor = null;
+    }
+}
 
         // CodeMirror (без изменений)
         if (!isCKEditor && !isTinyMCE && !editor) {
