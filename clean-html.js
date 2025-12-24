@@ -1,6 +1,6 @@
 /**
  * Clean HTML Script
- * Version: 1.21
+ * Version: 1.23
  * Updated: 24.12.2025
  * 
  * Порядок выполнения:
@@ -15,12 +15,13 @@
 
 (function() {
     'use strict';
-
+    
     // Глобальная функция для вызова из кнопки
     window.cleanHTMLContent = function() {
         var editor = null;
         var isCodeMirror = false;
         var isCKEditor = false;
+        var isTinyMCE = false;  // ← НОВАЯ ПЕРЕМЕННАЯ
         var html = '';
         var originalLength = 0;
 
@@ -34,11 +35,23 @@
             }
         }
 
-        if (!isCKEditor) {
+        // ← ДОБАВЛЯЕМ ПОДДЕРЖКУ WORDPRESS TINYMCE
+        if (!isCKEditor && typeof tinyMCE !== 'undefined' && tinyMCE.activeEditor && !tinyMCE.activeEditor.isHidden()) {
+            editor = tinyMCE.activeEditor;
+            html = editor.getContent();
+            if (html) {
+                isTinyMCE = true;
+                originalLength = html.length;
+            }
+        }
+
+        // Поиск обычных textarea (для WordPress Text mode и других сайтов)
+        if (!isCKEditor && !isTinyMCE) {
             editor = document.querySelector('textarea[name="message"]') ||
                 document.querySelector('textarea#message') ||
-                document.querySelector('textarea.manFl');
-
+                document.querySelector('textarea.manFl') ||
+                document.querySelector('textarea#content');  // ← ДОБАВИЛИ ДЛЯ WORDPRESS
+            
             if (editor && editor.value) {
                 html = editor.value;
                 originalLength = html.length;
@@ -47,7 +60,8 @@
             }
         }
 
-        if (!isCKEditor && !editor) {
+        // CodeMirror (без изменений)
+        if (!isCKEditor && !isTinyMCE && !editor) {
             var activeElement = document.activeElement;
             if (activeElement && activeElement.closest) {
                 var cmWrapper = activeElement.closest('.CodeMirror');
@@ -74,7 +88,8 @@
             }
         }
 
-        if (!isCKEditor && !isCodeMirror && !editor) {
+        // Последняя попытка - activeElement
+        if (!isCKEditor && !isTinyMCE && !isCodeMirror && !editor) {
             editor = document.activeElement;
             if (editor && editor.tagName && editor.tagName.toLowerCase() === 'textarea' && editor.value) {
                 html = editor.value;
@@ -392,16 +407,14 @@
         // Устанавливаем очищенный текст обратно
         if (isCKEditor) {
             CKEDITOR.instances.message.setData(html);
+        } else if (isTinyMCE) {  // ←  ДЛЯ WORDPRESS VISUAL MODE
+            editor.setContent(html);
         } else if (isCodeMirror) {
             editor.setValue(html);
         } else {
             editor.value = html;
-            editor.dispatchEvent(new Event('input', {
-                bubbles: true
-            }));
-            editor.dispatchEvent(new Event('change', {
-                bubbles: true
-            }));
+            editor.dispatchEvent(new Event('input', { bubbles: true }));
+            editor.dispatchEvent(new Event('change', { bubbles: true }));
         }
 
         // Показываем результат
