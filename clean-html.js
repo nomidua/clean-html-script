@@ -1,11 +1,10 @@
 /**
  * Clean HTML Script
- * Version: 1.27
+ * Version: 1.29
  * Updated: 25.12.2025
  * 
  * Порядок выполнения:
- * 0. Удаление стилизаций
- * 1. Удаление атрибутов
+ * 1. Удаление атрибутов и стилизаций
  * 2. Очистка тегов
  * 3. Удаление style/class
  * 4. Форматирование
@@ -112,16 +111,7 @@ if (!isCKEditor && !isTinyMCE) {
             return;
         }
 
-        // ===== БЛОК 0: УДАЛЕНИЕ ВЫДЕЛЕНИЙ/СТИЛИЗАЦИЙ ТЕКСТА =====
-
-        // 0.1 Удаляем теги выделения (сохраняя содержимое)
-        html = html.replace(/<\/?b[^>]*>/gi, '');        // <b>
-        html = html.replace(/<\/?strong[^>]*>/gi, '');   // <strong>
-        html = html.replace(/<\/?i[^>]*>/gi, '');        // <i>
-        html = html.replace(/<\/?em[^>]*>/gi, '');       // <em>
-        html = html.replace(/<\/?u[^>]*>/gi, '');        // <u>
-
-        // ===== БЛОК 1: УДАЛЕНИЕ АТРИБУТОВ =====
+        // ===== БЛОК 1: УДАЛЕНИЕ АТРИБУТОВ И СТИЛИЗАЦИЙ =====
 
         // 1. Убираем атрибут dir="ltr"
         html = html.replace(/\s*dir="ltr"/gi, '');
@@ -146,6 +136,13 @@ if (!isCKEditor && !isTinyMCE) {
 
         // 7. Удаляем теги <font>
         html = html.replace(/<\/?font[^>]*>/gi, '');
+
+        // 7.1 Удаляем теги выделения (сохраняя содержимое)
+        html = html.replace(/<\/?b[^>]*>/gi, '');
+        html = html.replace(/<\/?strong[^>]*>/gi, '');
+        html = html.replace(/<\/?i[^>]*>/gi, '');
+        html = html.replace(/<\/?em[^>]*>/gi, '');
+        html = html.replace(/<\/?u[^>]*>/gi, '');
 
         // ===== БЛОК 2: ОЧИСТКА ПУСТЫХ ТЕГОВ =====
 
@@ -292,7 +289,7 @@ if (!isCKEditor && !isTinyMCE) {
         html = html.replace(/<dl[^>]*>([\s\S]*?)<\/dl>/gi, function(match, content) {
             var items = [];
 
-            content = content.replace(/<\/?(?:b|strong)>/gi, '');
+            // content = content.replace(/<\/?(?:b|strong)>/gi, '');
 
             var dtList = [];
             var ddList = [];
