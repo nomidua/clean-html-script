@@ -1,6 +1,6 @@
 /**
  * Clean HTML Script
- * Version: 1.26
+ * Version: 1.27
  * Updated: 25.12.2025
  * 
  * Порядок выполнения:
@@ -111,6 +111,15 @@ if (!isCKEditor && !isTinyMCE) {
             return;
         }
 
+        // ===== БЛОК 0: УДАЛЕНИЕ ВЫДЕЛЕНИЙ/СТИЛИЗАЦИЙ ТЕКСТА =====
+
+        // 0.1 Удаляем теги выделения (сохраняя содержимое)
+        html = html.replace(/<\/?b[^>]*>/gi, '');        // <b>
+        html = html.replace(/<\/?strong[^>]*>/gi, '');   // <strong>
+        html = html.replace(/<\/?i[^>]*>/gi, '');        // <i>
+        html = html.replace(/<\/?em[^>]*>/gi, '');       // <em>
+        html = html.replace(/<\/?u[^>]*>/gi, '');        // <u>
+
         // ===== БЛОК 1: УДАЛЕНИЕ АТРИБУТОВ =====
 
         // 1. Убираем атрибут dir="ltr"
@@ -149,11 +158,13 @@ if (!isCKEditor && !isTinyMCE) {
         // 9. Убираем пустые div
         html = html.replace(/<div[^>]*>(\s|&nbsp;)*<\/div>/gi, '');
 
+        /**
         // 9.1. Удаляем пустые <b> и <b> вокруг других тегов
         for (var i = 0; i < 5; i++) {
             html = html.replace(/<b[^>]*>\s*<\/b>/gi, '');
             html = html.replace(/<b[^>]*>\s*(<[^>]+>.*?<\/[^>]+>)\s*<\/b>/gi, '$1');
         }
+        */
 
         // 10. Удаляем все <div> и <span> (сохраняя содержимое)
         html = html.replace(/<div[^>]*>/gi, '');
@@ -341,6 +352,7 @@ if (!isCKEditor && !isTinyMCE) {
         // 29.2. Удаляем точку и запятую в конце заголовков h2, h3, h4 UP+
         html = html.replace(/[.,]\s*<\/(h[234])>/gi, '</$1>');
 
+        /**
         // 30. Убираем <strong> и <b> из заголовков h2, h3, h4
         // Защищаем содержимое заголовков
         var h2List = [];
@@ -361,6 +373,7 @@ if (!isCKEditor && !isTinyMCE) {
             content = content.replace(/<\/?strong>/gi, '').replace(/<\/?b>/gi, '');
             return '<h4' + attrs + '>' + content + '</h4>';
         });
+        */
 
         // 31. Очистка таблиц и добавление style
         html = html.replace(/<table[^>]*>/gi, '<table style="width:100%;">');
