@@ -1,10 +1,10 @@
 /**
  * Clean HTML Script
- * Version: 1.29
+ * Version: 1.3
  * Updated: 25.12.2025
  * 
  * Порядок выполнения:
- * 1. Удаление атрибутов и стилизаций
+ * 1. Удаление атрибутов
  * 2. Очистка тегов
  * 3. Удаление style/class
  * 4. Форматирование
@@ -15,13 +15,13 @@
 
 (function() {
     'use strict';
-    
+
     // Глобальная функция для вызова из кнопки
     window.cleanHTMLContent = function() {
         var editor = null;
         var isCodeMirror = false;
         var isCKEditor = false;
-        var isTinyMCE = false;  // ← НОВАЯ ПЕРЕМЕННАЯ
+        var isTinyMCE = false; // ← НОВАЯ ПЕРЕМЕННАЯ
         var html = '';
         var originalLength = 0;
 
@@ -35,36 +35,36 @@
             }
         }
 
-// ДОБАВЛЯЕМ ПОДДЕРЖКУ WORDPRESS TINYMCE
-if (!isCKEditor && typeof tinyMCE !== 'undefined') {
-    var activeEditor = tinyMCE.activeEditor;
-    if (!activeEditor || activeEditor.isHidden()) {
-        activeEditor = tinyMCE.get('content');
-    }
-    if (activeEditor && !activeEditor.isHidden()) {
-        editor = activeEditor;
-        html = editor.getContent();
-        if (html) {
-            isTinyMCE = true;
-            originalLength = html.length;
+        // ДОБАВЛЯЕМ ПОДДЕРЖКУ WORDPRESS TINYMCE
+        if (!isCKEditor && typeof tinyMCE !== 'undefined') {
+            var activeEditor = tinyMCE.activeEditor;
+            if (!activeEditor || activeEditor.isHidden()) {
+                activeEditor = tinyMCE.get('content');
+            }
+            if (activeEditor && !activeEditor.isHidden()) {
+                editor = activeEditor;
+                html = editor.getContent();
+                if (html) {
+                    isTinyMCE = true;
+                    originalLength = html.length;
+                }
+            }
         }
-    }
-}
 
-// Поиск обычных textarea (для WordPress Text mode и других сайтов)
-if (!isCKEditor && !isTinyMCE) {
-    editor = document.querySelector('textarea[name="message"]') ||
-        document.querySelector('textarea#message') ||
-        document.querySelector('textarea.manFl') ||
-        document.querySelector('textarea#content');
-    
-    if (editor && editor.value) {
-        html = editor.value;
-        originalLength = html.length;
-    } else {
-        editor = null;
-    }
-}
+        // Поиск обычных textarea (для WordPress Text mode и других сайтов)
+        if (!isCKEditor && !isTinyMCE) {
+            editor = document.querySelector('textarea[name="message"]') ||
+                document.querySelector('textarea#message') ||
+                document.querySelector('textarea.manFl') ||
+                document.querySelector('textarea#content');
+
+            if (editor && editor.value) {
+                html = editor.value;
+                originalLength = html.length;
+            } else {
+                editor = null;
+            }
+        }
 
         // CodeMirror (без изменений)
         if (!isCKEditor && !isTinyMCE && !editor) {
@@ -136,13 +136,6 @@ if (!isCKEditor && !isTinyMCE) {
 
         // 7. Удаляем теги <font>
         html = html.replace(/<\/?font[^>]*>/gi, '');
-
-        // 7.1 Удаляем теги выделения (сохраняя содержимое)
-        html = html.replace(/<\/?b[^>]*>/gi, '');
-        html = html.replace(/<\/?strong[^>]*>/gi, '');
-        html = html.replace(/<\/?i[^>]*>/gi, '');
-        html = html.replace(/<\/?em[^>]*>/gi, '');
-        html = html.replace(/<\/?u[^>]*>/gi, '');
 
         // ===== БЛОК 2: ОЧИСТКА ПУСТЫХ ТЕГОВ =====
 
@@ -338,6 +331,13 @@ if (!isCKEditor && !isTinyMCE) {
         html = html.replace(/<li>\s*<p>/gi, '<li>');
         html = html.replace(/<\/p>\s*<\/li>/gi, '</li>');
 
+        // 28.1 Удаляем теги выделения (сохраняя содержимое)
+        html = html.replace(/<\/?b[^>]*>/gi, '');
+        html = html.replace(/<\/?strong[^>]*>/gi, '');
+        html = html.replace(/<\/?i[^>]*>/gi, '');
+        html = html.replace(/<\/?em[^>]*>/gi, '');
+        html = html.replace(/<\/?u[^>]*>/gi, '');
+
         // ===== БЛОК 6: ДОБАВЛЕНИЕ АТРИБУТОВ =====
 
         // 29. Конвертируем <h1> в <h2> (SEO: только один H1 на странице)
@@ -386,91 +386,95 @@ if (!isCKEditor && !isTinyMCE) {
         // 32. Форматируем код с переносами строк
         html = html.replace(/></g, '>\n<');
 
-// 33. Автоматическая расстановка знаков препинания в списках
-html = html.replace(/<(ul|ol)>([\s\S]*?)<\/\1>/gi, function(match, tag, content) {
-    var items = content.match(/<li[^>]*>[\s\S]*?<\/li>/gi);
-    if (!items || items.length === 0) return match;
+        // 33. Автоматическая расстановка знаков препинания в списках
+        html = html.replace(/<(ul|ol)>([\s\S]*?)<\/\1>/gi, function(match, tag, content) {
+            var items = content.match(/<li[^>]*>[\s\S]*?<\/li>/gi);
+            if (!items || items.length === 0) return match;
 
-    var firstItemText = items[0].replace(/<[^>]+>/g, '').trim();
-    var firstLetter = firstItemText.match(/[а-яёА-ЯЁa-zA-Z]/);
-    if (!firstLetter) return match;
+            var firstItemText = items[0].replace(/<[^>]+>/g, '').trim();
+            var firstLetter = firstItemText.match(/[а-яёА-ЯЁa-zA-Z]/);
+            if (!firstLetter) return match;
 
-    var isUpperCase = firstLetter[0] === firstLetter[0].toUpperCase();
+            var isUpperCase = firstLetter[0] === firstLetter[0].toUpperCase();
 
-    // Сокращения С точкой (не удаляем их точку)
-    var abbrWithDot = ['шт', 'ст', 'гл', 'стр', 'ч\\.л', 'ст\\.л', 'т\\.д', 'т\\.п', 'и\\sдр', 'и\\sт', 'напр', 'ср'];
+            // Сокращения С точкой (не удаляем их точку)
+            var abbrWithDot = ['шт', 'ст', 'гл', 'стр', 'ч\\.л', 'ст\\.л', 'т\\.д', 'т\\.п', 'и\\sдр', 'и\\sт', 'напр', 'ср'];
 
-    var processedItems = items.map(function(item, index) {
-        var isLast = (index === items.length - 1);
-        
-        // Не трогаем ! и ?
-        if (/[!?]\s*(<\/[^>]+>)*\s*<\/li>$/i.test(item)) {
-            return item;
-        }
+            var processedItems = items.map(function(item, index) {
+                var isLast = (index === items.length - 1);
 
-        var cleaned = item;
-        
-        // Проверяем, заканчивается ли на сокращение с точкой
-        var endsWithAbbrDot = false;
-        for (var i = 0; i < abbrWithDot.length; i++) {
-            var pattern = new RegExp(abbrWithDot[i] + '\\.+\\s*(<\/[^>]+>)*\\s*<\/li>$', 'i');
-            if (pattern.test(cleaned)) {
-                endsWithAbbrDot = true;
-                // Удаляем ЛИШНИЕ точки после сокращения (оставляем одну)
-                var replacePattern = new RegExp('(' + abbrWithDot[i] + ')\\.+(\\s*(<\/[^>]+>)*\\s*<\/li>)$', 'gi');
-                cleaned = cleaned.replace(replacePattern, '$1.$2');
-                break;
-            }
-        }
-        
-        // Удаляем лишние знаки (НО НЕ точку после сокращения!)
-        if (!endsWithAbbrDot) {
-            cleaned = cleaned.replace(/(\s|&nbsp;|\.|\;|\,)+\s*<\/li>$/gi, '</li>');
-        } else {
-            // Если есть сокращение, удаляем только пробелы/запятые/точки с запятой
-            cleaned = cleaned.replace(/(\s|&nbsp;|\;|\,)+\s*<\/li>$/gi, '</li>');
-        }
-        
-        cleaned = cleaned.replace(/(\s|&nbsp;|\.|\;|\,)+\s*(<\/a>)/gi, '$2');
+                // Не трогаем ! и ?
+                if (/[!?]\s*(<\/[^>]+>)*\s*<\/li>$/i.test(item)) {
+                    return item;
+                }
 
-        // Определяем нужный знак
-        var punctuation;
-        if (isUpperCase) {
-            punctuation = '.';  // Заглавная → всегда точка
-        } else {
-            punctuation = isLast ? '.' : ';';  // Строчная → ; или .
-        }
+                var cleaned = item;
 
-        // Добавляем знак (если его ещё нет)
-        if (/<\/a>\s*<\/li>$/i.test(cleaned)) {
-            cleaned = cleaned.replace(/(<\/a>)\s*<\/li>$/i, '$1' + punctuation + '</li>');
-        } else {
-            // Проверяем, есть ли уже нужный знак
-            var hasCorrectPunctuation = new RegExp('[' + punctuation.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ']\\s*<\/li>$', 'i').test(cleaned);
-            if (!hasCorrectPunctuation) {
-                cleaned = cleaned.replace(/<\/li>$/i, punctuation + '</li>');
-            }
-        }
+                // Проверяем, заканчивается ли на сокращение с точкой
+                var endsWithAbbrDot = false;
+                for (var i = 0; i < abbrWithDot.length; i++) {
+                    var pattern = new RegExp(abbrWithDot[i] + '\\.+\\s*(<\/[^>]+>)*\\s*<\/li>$', 'i');
+                    if (pattern.test(cleaned)) {
+                        endsWithAbbrDot = true;
+                        // Удаляем ЛИШНИЕ точки после сокращения (оставляем одну)
+                        var replacePattern = new RegExp('(' + abbrWithDot[i] + ')\\.+(\\s*(<\/[^>]+>)*\\s*<\/li>)$', 'gi');
+                        cleaned = cleaned.replace(replacePattern, '$1.$2');
+                        break;
+                    }
+                }
 
-        return cleaned;
-    });
+                // Удаляем лишние знаки (НО НЕ точку после сокращения!)
+                if (!endsWithAbbrDot) {
+                    cleaned = cleaned.replace(/(\s|&nbsp;|\.|\;|\,)+\s*<\/li>$/gi, '</li>');
+                } else {
+                    // Если есть сокращение, удаляем только пробелы/запятые/точки с запятой
+                    cleaned = cleaned.replace(/(\s|&nbsp;|\;|\,)+\s*<\/li>$/gi, '</li>');
+                }
 
-    return '<' + tag + '>' + processedItems.join('') + '</' + tag + '>';
-});
+                cleaned = cleaned.replace(/(\s|&nbsp;|\.|\;|\,)+\s*(<\/a>)/gi, '$2');
+
+                // Определяем нужный знак
+                var punctuation;
+                if (isUpperCase) {
+                    punctuation = '.'; // Заглавная → всегда точка
+                } else {
+                    punctuation = isLast ? '.' : ';'; // Строчная → ; или .
+                }
+
+                // Добавляем знак (если его ещё нет)
+                if (/<\/a>\s*<\/li>$/i.test(cleaned)) {
+                    cleaned = cleaned.replace(/(<\/a>)\s*<\/li>$/i, '$1' + punctuation + '</li>');
+                } else {
+                    // Проверяем, есть ли уже нужный знак
+                    var hasCorrectPunctuation = new RegExp('[' + punctuation.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ']\\s*<\/li>$', 'i').test(cleaned);
+                    if (!hasCorrectPunctuation) {
+                        cleaned = cleaned.replace(/<\/li>$/i, punctuation + '</li>');
+                    }
+                }
+
+                return cleaned;
+            });
+
+            return '<' + tag + '>' + processedItems.join('') + '</' + tag + '>';
+        });
 
         // ===== КОНЕЦ ОЧИСТКИ =====
 
         // Устанавливаем очищенный текст обратно
         if (isCKEditor) {
             CKEDITOR.instances.message.setData(html);
-        } else if (isTinyMCE) {  // ←  ДЛЯ WORDPRESS VISUAL MODE
+        } else if (isTinyMCE) { // ←  ДЛЯ WORDPRESS VISUAL MODE
             editor.setContent(html);
         } else if (isCodeMirror) {
             editor.setValue(html);
         } else {
             editor.value = html;
-            editor.dispatchEvent(new Event('input', { bubbles: true }));
-            editor.dispatchEvent(new Event('change', { bubbles: true }));
+            editor.dispatchEvent(new Event('input', {
+                bubbles: true
+            }));
+            editor.dispatchEvent(new Event('change', {
+                bubbles: true
+            }));
         }
 
         // Показываем результат
