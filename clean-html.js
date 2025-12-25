@@ -1,6 +1,6 @@
 /**
  * Clean HTML Script
- * Version: 1.3
+ * Version: 1.31
  * Updated: 25.12.2025
  * 
  * Порядок выполнения:
@@ -223,23 +223,6 @@
 
         // 20.1. Убираем пробел (обычный и &nbsp;) перед знаками препинания
         html = html.replace(/(\s|&nbsp;)+([.,!?;:])/g, '$2');
-
-        /***
-        // 20.2. Убираем пробелы внутри кавычек (только ёлочки и лапки) после открывающих: « „ и перед закрывающими: » "
-        html = html.replace(/&laquo;(\s|&nbsp;)+/g, '&laquo;');
-        html = html.replace(/«(\s|&nbsp;)+/g, '«');
-        html = html.replace(/&bdquo;(\s|&nbsp;)+/g, '&bdquo;');
-        html = html.replace(/„(\s|&nbsp;)+/g, '„');
-
-        html = html.replace(/(\s|&nbsp;)+&raquo;/g, '&raquo;');
-        html = html.replace(/(\s|&nbsp;)+»/g, '»');
-        html = html.replace(/(\s|&nbsp;)+&ldquo;/g, '&ldquo;');
-        html = html.replace(/(\s|&nbsp;)+"/g, '"');
-
-        // 20.3. Убираем пробел после открывающей скобки и закрывающей
-        html = html.replace(/\((\s|&nbsp;)+/g, '(');
-        html = html.replace(/(\s|&nbsp;)+\)/g, ')');
-        ***/
 
         // ===== БЛОК 5: ПРЕОБРАЗОВАНИЯ =====
 
