@@ -1,6 +1,6 @@
 /**
  * Clean HTML Script
- * Version: 1.34
+ * Version: 1.35
  * Updated: 26.12.2025
  * GitHub: https://github.com/nomidua/clean-html-script
  * CDN: https://cdn.jsdelivr.net/gh/nomidua/clean-html-script@main/clean-html.js
@@ -403,13 +403,17 @@
 
     // ===== КОНЕЦ ОЧИСТКИ =====
 
-    // Устанавливаем очищенный текст обратно
+// Устанавливаем очищенный текст обратно
     if (isCKEditor) {
       CKEDITOR.instances.message.setData(html);
     } else if (isTinyMCE) {
       editor.setContent(html);
     } else if (isCodeMirror) {
       editor.setValue(html);
+      editor.refresh();
+    } else if (editor.CodeMirror) {
+      editor.CodeMirror.setValue(html);
+      editor.CodeMirror.refresh();
     } else {
       editor.value = html;
       editor.dispatchEvent(new Event('input', {
