@@ -1,4 +1,4 @@
-# Clean HTML Script v1.34
+# Clean HTML Script v1.35
 
 ## 📦 Installation
 
@@ -12,7 +12,7 @@ Download `clean-html.js` and include in your project.
 
 ---
 
-## 🆕 Changelog v1.34 (26.12.2025)
+## 🆕 Changelog v1.35 (26.12.2025)
 
 ### 🐛 Critical Fixes
 - **FIXED:** Removed Rule 28.1 that was deleting `<img>`, `<ul>`, `<iframe>` tags
