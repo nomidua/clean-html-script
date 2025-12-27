@@ -1,7 +1,7 @@
 /**
  * Clean HTML Script
- * Version: 1.35
- * Updated: 26.12.2025
+ * Version: 1.36
+ * Updated: 27.12.2025
  * GitHub: https://github.com/nomidua/clean-html-script
  * CDN: https://cdn.jsdelivr.net/gh/nomidua/clean-html-script@main/clean-html.js
  * 
@@ -53,22 +53,33 @@
       }
     }
 
-    // Поиск обычных textarea (для WordPress Text mode и других сайтов)
+    // Поиск обычных textarea и CodeMirror (WordPress Text mode)
     if (!isCKEditor && !isTinyMCE) {
-      editor = document.querySelector('textarea[name="message"]') ||
+      var textareaElement = document.querySelector('textarea#content') ||
+        document.querySelector('textarea[name="message"]') ||
         document.querySelector('textarea#message') ||
-        document.querySelector('textarea.manFl') ||
-        document.querySelector('textarea#content');
+        document.querySelector('textarea.manFl');
 
-      if (editor && editor.value) {
-        html = editor.value;
-        originalLength = html.length;
-      } else {
-        editor = null;
+      if (textareaElement) {
+        // Проверяем, есть ли у textarea прикрепленный CodeMirror
+        var nextSibling = textareaElement.nextElementSibling;
+        
+        if (nextSibling && nextSibling.classList.contains('CodeMirror') && nextSibling.CodeMirror) {
+          // Это WordPress Text Mode с CodeMirror
+          editor = nextSibling.CodeMirror;
+          isCodeMirror = true;
+          html = editor.getValue();
+          originalLength = html.length;
+        } else if (textareaElement.value) {
+          // Обычный textarea без CodeMirror
+          editor = textareaElement;
+          html = editor.value;
+          originalLength = html.length;
+        }
       }
     }
 
-    // CodeMirror
+    // Резервный поиск CodeMirror (для других редакторов)
     if (!isCKEditor && !isTinyMCE && !editor) {
       var activeElement = document.activeElement;
       if (activeElement && activeElement.closest) {
@@ -76,6 +87,8 @@
         if (cmWrapper && cmWrapper.CodeMirror) {
           editor = cmWrapper.CodeMirror;
           isCodeMirror = true;
+          html = editor.getValue();
+          originalLength = html.length;
         }
       }
 
@@ -85,14 +98,11 @@
           if (allCM[i].CodeMirror) {
             editor = allCM[i].CodeMirror;
             isCodeMirror = true;
+            html = editor.getValue();
+            originalLength = html.length;
             break;
           }
         }
-      }
-
-      if (isCodeMirror && editor) {
-        html = editor.getValue();
-        originalLength = html.length;
       }
     }
 
@@ -402,27 +412,23 @@
     });
 
     // ===== КОНЕЦ ОЧИСТКИ =====
-
-// Устанавливаем очищенный текст обратно
-    if (isCKEditor) {
-      CKEDITOR.instances.message.setData(html);
-    } else if (isTinyMCE) {
-      editor.setContent(html);
-    } else if (isCodeMirror) {
-      editor.setValue(html);
-      editor.refresh();
-    } else if (editor.CodeMirror) {
-      editor.CodeMirror.setValue(html);
-      editor.CodeMirror.refresh();
-    } else {
-      editor.value = html;
-      editor.dispatchEvent(new Event('input', {
-        bubbles: true
-      }));
-      editor.dispatchEvent(new Event('change', {
-        bubbles: true
-      }));
-    }
+		
+		// Устанавливаем очищенный текст обратно v3
+if (isCKEditor) {
+  CKEDITOR.instances.message.setData(html);
+} else if (isTinyMCE) {
+  editor.setContent(html);
+} else if (isCodeMirror) {
+  editor.setValue(html);
+} else {
+  editor.value = html;
+  editor.dispatchEvent(new Event('input', {
+    bubbles: true
+  }));
+  editor.dispatchEvent(new Event('change', {
+    bubbles: true
+  }));
+}
 
     // Показываем результат
     var saved = originalLength - html.length;
