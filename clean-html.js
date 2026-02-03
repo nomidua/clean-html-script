@@ -1,7 +1,7 @@
 /**
  * Clean HTML Script
- * Version: 1.36
- * Updated: 27.12.2025
+ * Version: 1.37
+ * Updated: 03.02.2026
  * GitHub: https://github.com/nomidua/clean-html-script
  * CDN: https://cdn.jsdelivr.net/gh/nomidua/clean-html-script@main/clean-html.js
  * 
@@ -166,6 +166,9 @@
       html = html.replace(/<b[^>]*>\s*<\/b>/gi, '');
       html = html.replace(/<b[^>]*>\s*(<[^>]+>.*?<\/[^>]+>)\s*<\/b>/gi, '$1');
     }
+
+	// 2.5.1. Заменяем <div> с $IMAGE$ на <p>
+	html = html.replace(/<div([^>]*)>\$IMAGE(\d+)\$<\/div>/gi, '<p$1>$IMAGE$2$</p>');
 
     // 2.6. Удаляем все <div> и <span> (сохраняя содержимое)
     html = html.replace(/<div[^>]*>/gi, '');
