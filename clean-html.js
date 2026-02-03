@@ -1,7 +1,7 @@
 /**
  * Clean HTML Script
- * Version: 1.37
- * Updated: 03.02.2026
+ * Version: 1.39
+ * Updated: 04.02.2026
  * GitHub: https://github.com/nomidua/clean-html-script
  * CDN: https://cdn.jsdelivr.net/gh/nomidua/clean-html-script@main/clean-html.js
  * 
@@ -169,6 +169,9 @@
 
 	// 2.5.1. Заменяем <div> с $IMAGE$ на <p>
 	html = html.replace(/<div([^>]*)>\$IMAGE(\d+)\$<\/div>/gi, '<p$1>$IMAGE$2$</p>');
+
+	// 2.5.2. Заменяем <div> с margin-left/margin-right на <p>
+	html = html.replace(/<div\s+style="(margin-(?:left|right):\s*\d+px;?)">([\s\S]*?)<\/div>/gi, '<p style="$1">$2</p>');
 
     // 2.6. Удаляем все <div> и <span> (сохраняя содержимое)
     html = html.replace(/<div[^>]*>/gi, '');
