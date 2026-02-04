@@ -1,4 +1,4 @@
-# Clean HTML Script v1.35
+# Clean HTML Script v1.41
 
 ## 📦 Installation
 
@@ -12,31 +12,36 @@ Download `clean-html.js` and include in your project.
 
 ---
 
-## 🆕 Changelog v1.35 (26.12.2025)
+## 🆕 Changelog v1.41 (04.02.2026)
 
-### 🐛 Critical Fixes
-- **FIXED:** Removed Rule 28.1 that was deleting `<img>`, `<ul>`, `<iframe>` tags
-  - Previous regex `/<\/?i[^>]*>/gi` was matching `<img>`, `<iframe>`
-  - Previous regex `/<\/?u[^>]*>/gi` was matching `<ul>`
-  - This rule has been completely removed for safety
+### ✨ New Features
+- **NEW:** Rule 2.5.1 - Automatic conversion of `<div>` with `$IMAGE$` placeholders to centered paragraphs
+  - Converts `<div>$IMAGE1$</div>` → `<p style="text-align: center;">$IMAGE1$</p>`
+  - Converts `<div style="text-align: center;">$IMAGE1$</div>` → `<p style="text-align: center;">$IMAGE1$</p>`
+  - Works with any `$IMAGE` number and any `<div>` attributes
 
-### ✨ Improvements
-- **IMPROVED:** Rule 7.2 (list punctuation) now handles lists with line breaks correctly
-  - Added `\s*` to regex: `/<(ul|ol)>\s*([\s\S]*?)\s*<\/\1>/gi`
-  - Now properly detects `<ul>` and `<ol>` tags even when separated by newlines
+- **NEW:** Rule 2.5.2 - Preservation of `margin-left` indentation in paragraphs
+  - Converts `<div style="margin-left: 40px;">Text</div>` → `<p style="margin-left: 40px;">Text</p>`
+  - Supports any pixel value (e.g., 20px, 40px, 60px)
+  - Handles multi-line text with `<br />` tags inside
 
-### 🔄 Code Reorganization
-- **REORGANIZED:** All rules now follow block-based numbering:
-  - **БЛОК 1:** Удаление атрибутов (1.1-1.7)
-  - **БЛОК 2:** Очистка пустых тегов (2.1-2.11)
-  - **БЛОК 3:** Удаление style/class (3.1-3.4)
-  - **БЛОК 4:** Форматирование текста (4.1-4.5)
-  - **БЛОК 5:** Преобразования (5.1-5.4)
-  - **БЛОК 6:** Добавление атрибутов (6.1-6.5)
-  - **БЛОК 7:** Финальная обработка (7.1-7.2)
+- **NEW:** Rule 3.1.1 & 3.2.1 - Protection system for `margin-left` styles
+  - Temporarily protects `style="margin-left: XXpx;"` during global style removal
+  - Restores protected styles after cleanup
+  - Ensures indented paragraphs remain properly formatted
+
+### 🔄 Processing Order
+All rules follow strict block-based execution:
+- **БЛОК 1:** Удаление атрибутов (1.1-1.7)
+- **БЛОК 2:** Очистка пустых тегов (2.1-2.11)
+- **БЛОК 3:** Удаление style/class (3.1-3.4)
+- **БЛОК 4:** Форматирование текста (4.1-4.5)
+- **БЛОК 5:** Преобразования (5.1-5.4)
+- **БЛОК 6:** Добавление атрибутов (6.1-6.5)
+- **БЛОК 7:** Финальная обработка (7.1-7.2)
 
 ### ⚠️ Breaking Changes
-None. Version 1.34 is fully backward compatible with v1.33.
+None. Version 1.41 is fully backward compatible with v1.40.
 
 ---
 
@@ -52,13 +57,15 @@ None. Version 1.34 is fully backward compatible with v1.33.
 ### What it does
 1. **Removes attributes:** `dir`, `aria-level`, `bis_size`, `target="_new"`, `id`, `data-*`, `role`
 2. **Cleans empty tags:** `<p>`, `<div>`, `<span>`, `<section>`, `<li>`, `<ul>`, `<ol>`
-3. **Removes styles & classes** (protects `$IMAGE$` placeholders and `<img>` class)
+3. **Removes styles & classes** (protects `$IMAGE$` placeholders, `margin-left`, and `<img>` class)
 4. **Text formatting:**
    - Fixes spaces before punctuation
    - Normalizes dashes (em-dash, en-dash)
    - Cleans `&nbsp;` entities
    - Fixes spaces around links
 5. **Transformations:**
+   - `<div>` with `$IMAGE$` → `<p style="text-align: center;">$IMAGE$</p>`
+   - `<div style="margin-left: XXpx;">` → `<p style="margin-left: XXpx;">`
    - YouTube links → embedded iframes
    - `<dl>` lists → `<ul>` lists
    - Automatic punctuation in lists (uppercase → periods, lowercase → semicolons)
@@ -87,7 +94,7 @@ document.addEventListener('DOMContentLoaded',function(){
     var b=document.createElement('button');
     b.type='button';
     b.innerHTML='Умная очистка HTML';
-    b.style.cssText='position:absolute;top:36px;right:10px;z-index:1;background:linear-gradient(270deg,rgb(42,123,155) 0,rgb(87,199,133) 65%);padding:4px 8px;border-radius:3px;cursor:pointer;text-shadow:1px 1px #00000052;color:#fff;border:none;font-size:12px !important;';
+    b.style.cssText='position:absolute;top:10px;right:8px;z-index:1;background:linear-gradient(270deg,rgb(42,123,155) 0,rgb(87,199,133) 65%);padding:4px 8px;border-radius:3px;cursor:pointer;text-shadow:1px 1px #00000052;color:#fff;border:none;font-size:12px !important;';
     b.onclick=function(){cleanHTMLContent()};
     c.style.position!=='relative'&&c.style.position!=='absolute'&&(c.style.position='relative');
     c.appendChild(b)
@@ -105,7 +112,7 @@ function enqueue_clean_html_script() {
             'clean-html-script',
             'https://cdn.jsdelivr.net/gh/nomidua/clean-html-script@main/clean-html.js',
             array(),
-            '1.34',
+            '1.41',
             true
         );
     }
@@ -117,7 +124,7 @@ add_action('admin_enqueue_scripts', 'enqueue_clean_html_script');
 ```javascript
 // ==UserScript==
 // @name         Clean HTML Button
-// @version      1.34
+// @version      1.41
 // @match        https://yoursite.com/*
 // @grant        none
 // ==/UserScript==
@@ -134,7 +141,9 @@ add_action('admin_enqueue_scripts', 'enqueue_clean_html_script');
 
 ## 📝 Version History
 
-- **v1.34** (26.12.2025) - Fixed image/list deletion bug, reorganized numbering
+- **v1.41** (04.02.2026) - Added `$IMAGE$` div conversion and `margin-left` preservation
+- **v1.40** (04.02.2026) - Stability improvements
+- **v1.35** (26.12.2025) - Fixed image/list deletion bug, reorganized numbering
 - **v1.33** (26.12.2025) - Added bold/italic/underline removal
 - **v1.32** (25.12.2025) - WordPress TinyMCE support
 - **v1.21** (24.12.2025) - Improved list punctuation
@@ -144,7 +153,7 @@ add_action('admin_enqueue_scripts', 'enqueue_clean_html_script');
 ---
 
 ## 🐛 Known Issues
-None reported for v1.34.
+None reported for v1.41.
 
 ---
 
