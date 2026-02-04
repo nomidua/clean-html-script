@@ -1,6 +1,6 @@
-/**
+ /**
  * Clean HTML Script
- * Version: 1.411
+ * Version: 1.415
  * Updated: 04.02.2026
  * GitHub: https://github.com/nomidua/clean-html-script
  * CDN: https://cdn.jsdelivr.net/gh/nomidua/clean-html-script@main/clean-html.js
@@ -166,12 +166,12 @@
  html = html.replace(/<b[^>]*>\s*<\/b>/gi, '');
  html = html.replace(/<b[^>]*>\s*(<[^>]+>.*?<\/[^>]+>)\s*<\/b>/gi, '$1');
  }
-     
+ 
  // 2.5.1. Преобразуем <div> с $IMAGE$ в <p> с центрированием
 html = html.replace(/<div[^>]*>\s*\$IMAGE(\d+)\$\s*<\/div>/gi, function(match, num) {
  return '<p style="text-align: center;">$IMAGE' + num + '$</p>';
 });
-     
+ 
 // 2.5.2. Преобразуем <div style="margin-left: XXpx;"> в <p>
 html = html.replace(/<div\s+style="margin-left:\s*(\d+)px;">([\s\S]*?)<\/div>/gi, function(match, pixels, text) {
  return '<p style="margin-left: ' + pixels + 'px;">' + text + '</p>';
@@ -202,29 +202,45 @@ html = html.replace(/<div\s+style="margin-left:\s*(\d+)px;">([\s\S]*?)<\/div>/gi
 
  // ===== БЛОК 3: УДАЛЕНИЕ STYLE/CLASS =====
 
- // 3.1. Защита style у параграфов с $IMAGE$ (добавляем временно)
- html = html.replace(/<p>\$IMAGE(\d+)\$<\/p>/gi, function(match, num) {
+// 3.1. Защита style у параграфов с $IMAGE$
+html = html.replace(/<p>\$IMAGE(\d+)\$<\/p>/gi, function(match, num) {
  return '<p style="text-align: center;">$IMAGE' + num + '$</p>';
- });
-     
- // 3.1.1. Защита style="margin-left: XXpx;" у параграфов
+});
+
+// 3.1.1. Защита style="margin-left: XXpx;" у параграфов
 html = html.replace(/<p\s+style="margin-left:\s*(\d+)px;">/gi, '<p __PROTECTED_MARGIN__="$1">');
 
- // 3.2. Удаляем все style атрибуты
- html = html.replace(/\s*style="[^"]*"/gi, '');
-     
-     // 3.2.1. Возвращаем margin-left у параграфов
+// 3.1.2. Защита style="text-align: center;" у параграфов с <!--IMG
+html = html.replace(/<p\s+style="text-align:\s*center;">([\s\S]*?<!--IMG\d+-->[\s\S]*?)<\/p>/gi, function(match, content) {
+ return '<p __PROTECTED_CENTER__="true">' + content + '</p>';
+});
+
+// 3.1.3. Защита style у <img>
+html = html.replace(/(<img[^>]*)\s+style="([^"]*)"/gi, '$1 __PROTECTED_IMG_STYLE__="$2"');
+
+// 3.2. Удаляем все style атрибуты
+html = html.replace(/\s*style="[^"]*"/gi, '');
+
+// 3.2.1. Возвращаем margin-left у параграфов
 html = html.replace(/<p\s+__PROTECTED_MARGIN__="(\d+)">/gi, '<p style="margin-left: $1px;">');
 
- // 3.3. Возвращаем style для $IMAGE$
- html = html.replace(/<p>\$IMAGE(\d+)\$<\/p>/gi, function(match, num) {
- return '<p style="text-align: center;">$IMAGE' + num + '$</p>';
- });
+// 3.2.2. Возвращаем text-align: center у параграфов с <!--IMG
+html = html.replace(/<p\s+__PROTECTED_CENTER__="true">/gi, '<p style="text-align: center;">');
 
- // 3.4. Удаляем class (защищая <img>)
- html = html.replace(/(<img[^>]*)\s+class="([^"]*)"/gi, '$1 __PROTECTED_CLASS__="$2"');
- html = html.replace(/\s*class="[^"]*"/gi, '');
- html = html.replace(/__PROTECTED_CLASS__="/gi, 'class="');
+// 3.2.3. Возвращаем style у <img>
+html = html.replace(/__PROTECTED_IMG_STYLE__="/gi, 'style="');
+
+// 3.3. Возвращаем style для $IMAGE$
+html = html.replace(/<p>\$IMAGE(\d+)\$<\/p>/gi, function(match, num) {
+ return '<p style="text-align: center;">$IMAGE' + num + '$</p>';
+});
+
+// 3.4. Удаляем class (защищая <img> и <a class="ulightbox">)
+html = html.replace(/(<img[^>]*)\s+class="([^"]*)"/gi, '$1 __PROTECTED_IMG_CLASS__="$2"');
+html = html.replace(/(<a[^>]*)\s+class="ulightbox"/gi, '$1 __PROTECTED_LIGHTBOX__="ulightbox"');
+html = html.replace(/\s*class="[^"]*"/gi, '');
+html = html.replace(/__PROTECTED_IMG_CLASS__="/gi, 'class="');
+html = html.replace(/__PROTECTED_LIGHTBOX__="/gi, 'class="');
 
  // ===== БЛОК 4: ФОРМАТИРОВАНИЕ ТЕКСТА =====
 
