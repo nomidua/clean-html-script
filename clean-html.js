@@ -207,9 +207,9 @@ html = html.replace(/<h[234][^>]*>\s*\$IMAGE(\d+)\$\s*<\/h[234]>/gi, function(ma
 
 // 2.12. Удаляем лишние <br /> в начале и конце тегов
 // Удаляем <br /> сразу после открывающего тега
-html = html.replace(/(<(?:p|h[1-6]|li|blockquote|td|th)[^>]*>)\s*(?:<br\s*\/?>)+\s*/gi, '$1');
+html = html.replace(/(<(?:p|h[1-6]|li|blockquote|td|th)[^>]*>)(?:\s|&nbsp;)*(?:<br\s*\/?>)+(?:\s|&nbsp;)*/gi, '$1');
 // Удаляем один или несколько <br /> перед закрывающим тегом
-html = html.replace(/\s*(?:<br\s*\/?>)+\s*(<\/(?:p|h[1-6]|li|blockquote|td|th)>)/gi, '$1');
+html = html.replace(/(?:\s|&nbsp;)*(?:<br\s*\/?>)+(?:\s|&nbsp;)*(<\/(?:p|h[1-6]|li|blockquote|td|th)>)/gi, '$1');
   
  // ===== БЛОК 3: УДАЛЕНИЕ STYLE/CLASS =====
 
