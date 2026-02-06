@@ -1,7 +1,7 @@
  /**
  * Clean HTML Script
- * Version: 1.51
- * Updated: 05.02.2026
+ * Version: 1.52
+ * Updated: 06.02.2026
  * GitHub: https://github.com/nomidua/clean-html-script
  * CDN: https://cdn.jsdelivr.net/gh/nomidua/clean-html-script@main/clean-html.js
  * 
@@ -205,6 +205,12 @@ html = html.replace(/<h[234][^>]*>\s*\$IMAGE(\d+)\$\s*<\/h[234]>/gi, function(ma
  html = html.replace(/<li>\s*<p>/gi, '<li>');
  html = html.replace(/<\/p>\s*<\/li>/gi, '</li>');
 
+// 2.12. Удаляем лишние <br /> в начале и конце тегов
+// Удаляем <br /> сразу после открывающего тега
+html = html.replace(/(<(?:p|h[1-6]|li|blockquote|td|th)[^>]*>)\s*(?:<br\s*\/?>)+\s*/gi, '$1');
+// Удаляем один или несколько <br /> перед закрывающим тегом
+html = html.replace(/\s*(?:<br\s*\/?>)+\s*(<\/(?:p|h[1-6]|li|blockquote|td|th)>)/gi, '$1');
+  
  // ===== БЛОК 3: УДАЛЕНИЕ STYLE/CLASS =====
 
 // 3.1. Защита style у параграфов с $IMAGE$
