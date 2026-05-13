@@ -4,6 +4,7 @@
  * Updated: 13.05.2026
  * GitHub: https://github.com/nomidua/clean-html-script
  * CDN: https://cdn.jsdelivr.net/gh/nomidua/clean-html-script@main/clean-html.js
+ * Update and Clear Cache: https://purge.jsdelivr.net/gh/nomidua/clean-html-script@main/clean-html.js
  * 
  * Порядок выполнения:
  * БЛОК 1: Удаление атрибутов (1.1-1.7)
