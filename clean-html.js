@@ -1,7 +1,7 @@
  /**
  * Clean HTML Script
- * Version: 1.53
- * Updated: 07.02.2026
+ * Version: 1.55
+ * Updated: 13.05.2026
  * GitHub: https://github.com/nomidua/clean-html-script
  * CDN: https://cdn.jsdelivr.net/gh/nomidua/clean-html-script@main/clean-html.js
  * 
@@ -392,12 +392,18 @@ html = html.replace(/__PROTECTED_LIGHTBOX__="/gi, 'class="');
  });
 
  // 6.5. Очистка таблиц и добавление style
- html = html.replace(/<table[^>]*>/gi, '<table style="width:100%;">');
- html = html.replace(/<thead[^>]*>/gi, '<thead>');
- html = html.replace(/<th[^>]*>/gi, '<th>');
- html = html.replace(/<tbody[^>]*>/gi, '<tbody>');
- html = html.replace(/<tr[^>]*>/gi, '<tr>');
- html = html.replace(/<td[^>]*>/gi, '<td>');
+ // html = html.replace(/<table[^>]*>/gi, '<table style="width:100%;">');
+ // html = html.replace(/<thead[^>]*>/gi, '<thead>');
+ // html = html.replace(/<th[^>]*>/gi, '<th>');
+ // html = html.replace(/<tbody[^>]*>/gi, '<tbody>');
+ // html = html.replace(/<tr[^>]*>/gi, '<tr>');
+ // html = html.replace(/<td[^>]*>/gi, '<td>');
+
+ // 6.5. Очистка таблиц: удаляем все атрибуты у внутренних тегов и задаем стиль основной таблице
+ // Сначала очищаем все атрибуты у table, thead, tbody, tr, th, td
+ html = html.replace(/<(table|thead|tbody|tr|th|td)\b[^>]*>/gi, '<$1>');
+ // Затем добавляем нужный стиль только для основного тега table
+ html = html.replace(/<table>/gi, '<table style="width: 100%;">');
 
  // ===== БЛОК 7: ФИНАЛЬНАЯ ОБРАБОТКА =====
 
