@@ -1,7 +1,7 @@
- /**
+ /***
  * Clean HTML Script
- * Version: 1.57
- * Updated: 17.05.2026
+ * Version: 1.59
+ * Updated: 19.05.2026
  * GitHub: https://github.com/nomidua/clean-html-script
  * CDN: https://cdn.jsdelivr.net/gh/nomidua/clean-html-script@main/clean-html.js
  * Update and Clear Cache: https://purge.jsdelivr.net/gh/nomidua/clean-html-script@main/clean-html.js
@@ -14,7 +14,7 @@
  * БЛОК 5: Преобразования (5.1-5.8)
  * БЛОК 6: Добавление атрибутов (6.1-6.5)
  * БЛОК 7: Финальная обработка (7.1-7.2)
- */
+ ***/
 
 (function() {
  'use strict';
@@ -382,8 +382,11 @@ html = html.replace(/__PROTECTED_LIGHTBOX__="/gi, 'class="');
  html = html.replace(/<h1([^>]*)>/gi, '<h2$1>');
  html = html.replace(/<\/h1>/gi, '</h2>');
 
+ // 6.2. Добавляем style к <h2> // OLD
+ // html = html.replace(/<h2>/gi, '<h2 style="text-align: center;">');
+
  // 6.2. Добавляем style к <h2>
- html = html.replace(/<h2>/gi, '<h2 style="text-align: center;">');
+ html = html.replace(/<h2([^>]*)>/gi, '<h2$1 style="text-align: center;">');
 
  // 6.3. Удаляем точку и запятую в конце заголовков h2, h3, h4
  html = html.replace(/[.,]\s*<\/(h[234])>/gi, '</$1>');
