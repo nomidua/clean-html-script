@@ -1,7 +1,7 @@
  /**
  * Clean HTML Script
- * Version: 1.56
- * Updated: 18.05.2026
+ * Version: 1.57
+ * Updated: 17.05.2026
  * GitHub: https://github.com/nomidua/clean-html-script
  * CDN: https://cdn.jsdelivr.net/gh/nomidua/clean-html-script@main/clean-html.js
  * Update and Clear Cache: https://purge.jsdelivr.net/gh/nomidua/clean-html-script@main/clean-html.js
@@ -124,6 +124,13 @@
  return;
  }
 
+ // ===== БЛОК 0: ЗАЩИТА СОДЕРЖАНИЯ =====
+ var tocContent = '';
+ html = html.replace(/<div\s+class="table-of-contents">[\s\S]*?<\/div>/gi, function(match) {
+     tocContent = match;
+     return '__PROTECTED_TOC_PLACEHOLDER__';
+ });
+
  // ===== БЛОК 1: УДАЛЕНИЕ АТРИБУТОВ =====
 
  // 1.1. Убираем атрибут dir="ltr"
@@ -141,8 +148,8 @@
  // 1.5. Убираем атрибут id // OLD
  // html = html.replace(/\s+id="[^"]*"/gi, '');
 
- // 1.5. Убираем атрибут id (защищая h2 для содержания)
- html = html.replace(/<h2([^>]*)?\s+id="([^"]*)"([^>]*)?>/gi, '<h2$1 __PROTECTED_H2_ID__="$2"$3>');
+ // 1.5. Убираем атрибут id (защищая id у h2 для содержания)
+ html = html.replace(/(<h2[^>]*?)\s+id="([^"]*)"([^>]*?>)/gi, '$1 __PROTECTED_H2_ID__="$2"$3');
  html = html.replace(/\s+id="[^"]*"/gi, '');
  html = html.replace(/__PROTECTED_H2_ID__="/gi, 'id="');
 
@@ -219,10 +226,6 @@ html = html.replace(/(?:\s|&nbsp;)*(?:<br\s*\/?>)+(?:\s|&nbsp;)*(<\/(?:p|h[1-6]|
   
  // ===== БЛОК 3: УДАЛЕНИЕ STYLE/CLASS =====
 
-// 3.0. Защита контейнера содержания от удаления div/class
-html = html.replace(/<div\s+class="table-of-contents">/gi, '<__PROTECTED_TOC_DIV__>');
-html = html.replace(/<\/div>(\s*<h2)/gi, '</__PROTECTED_TOC_DIV__>\n$1'); // Маркируем закрывающий div перед h2
-
 // 3.1. Защита style у параграфов с $IMAGE$
 html = html.replace(/<p>\$IMAGE(\d+)\$<\/p>/gi, function(match, num) {
  return '<p style="text-align: center;">$IMAGE' + num + '$</p>';
@@ -262,10 +265,6 @@ html = html.replace(/(<a[^>]*)\s+class="ulightbox"/gi, '$1 __PROTECTED_LIGHTBOX_
 html = html.replace(/\s*class="[^"]*"/gi, '');
 html = html.replace(/__PROTECTED_IMG_CLASS__="/gi, 'class="');
 html = html.replace(/__PROTECTED_LIGHTBOX__="/gi, 'class="');
-
-// 3.4.1. Возвращаем контейнер содержания на место
-html = html.replace(/<__PROTECTED_TOC_DIV__>/gi, '<div class="table-of-contents">');
-html = html.replace(/<\/__PROTECTED_TOC_DIV__>/gi, '</div>');
 
  // ===== БЛОК 4: ФОРМАТИРОВАНИЕ ТЕКСТА =====
 
@@ -405,7 +404,7 @@ html = html.replace(/<\/__PROTECTED_TOC_DIV__>/gi, '</div>');
  return '<h4' + attrs + '>' + content + '</h4>';
  });
 
- // 6.5. Очистка таблиц и добавление style
+ // 6.5. Очистка таблиц и добавление style // OLD
  // html = html.replace(/<table[^>]*>/gi, '<table style="width:100%;">');
  // html = html.replace(/<thead[^>]*>/gi, '<thead>');
  // html = html.replace(/<th[^>]*>/gi, '<th>');
@@ -473,6 +472,11 @@ html = html.replace(/<\/__PROTECTED_TOC_DIV__>/gi, '</div>');
 
  return '<' + tag + '>' + processedItems.join('') + '</' + tag + '>';
  });
+
+  // Возвращаем блок содержания на место
+ if (tocContent) {
+     html = html.replace('__PROTECTED_TOC_PLACEHOLDER__', tocContent);
+ }
 
  // ===== КОНЕЦ ОЧИСТКИ =====
  
