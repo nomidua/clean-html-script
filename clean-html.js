@@ -1,7 +1,7 @@
  /**
  * Clean HTML Script
- * Version: 1.55
- * Updated: 13.05.2026
+ * Version: 1.56
+ * Updated: 18.05.2026
  * GitHub: https://github.com/nomidua/clean-html-script
  * CDN: https://cdn.jsdelivr.net/gh/nomidua/clean-html-script@main/clean-html.js
  * Update and Clear Cache: https://purge.jsdelivr.net/gh/nomidua/clean-html-script@main/clean-html.js
@@ -138,8 +138,13 @@
  // 1.4. Убираем атрибут target="_new"
  html = html.replace(/\s+target="_new"\s*/gi, ' ');
 
- // 1.5. Убираем атрибут id
+ // 1.5. Убираем атрибут id // OLD
+ // html = html.replace(/\s+id="[^"]*"/gi, '');
+
+ // 1.5. Убираем атрибут id (защищая h2 для содержания)
+ html = html.replace(/<h2([^>]*)?\s+id="([^"]*)"([^>]*)?>/gi, '<h2$1 __PROTECTED_H2_ID__="$2"$3>');
  html = html.replace(/\s+id="[^"]*"/gi, '');
+ html = html.replace(/__PROTECTED_H2_ID__="/gi, 'id="');
 
  // 1.6. Убираем все data-* атрибуты
  html = html.replace(/\s+data-[a-z-]+="[^"]*"/gi, '');
@@ -214,6 +219,10 @@ html = html.replace(/(?:\s|&nbsp;)*(?:<br\s*\/?>)+(?:\s|&nbsp;)*(<\/(?:p|h[1-6]|
   
  // ===== БЛОК 3: УДАЛЕНИЕ STYLE/CLASS =====
 
+// 3.0. Защита контейнера содержания от удаления div/class
+html = html.replace(/<div\s+class="table-of-contents">/gi, '<__PROTECTED_TOC_DIV__>');
+html = html.replace(/<\/div>(\s*<h2)/gi, '</__PROTECTED_TOC_DIV__>\n$1'); // Маркируем закрывающий div перед h2
+
 // 3.1. Защита style у параграфов с $IMAGE$
 html = html.replace(/<p>\$IMAGE(\d+)\$<\/p>/gi, function(match, num) {
  return '<p style="text-align: center;">$IMAGE' + num + '$</p>';
@@ -253,6 +262,10 @@ html = html.replace(/(<a[^>]*)\s+class="ulightbox"/gi, '$1 __PROTECTED_LIGHTBOX_
 html = html.replace(/\s*class="[^"]*"/gi, '');
 html = html.replace(/__PROTECTED_IMG_CLASS__="/gi, 'class="');
 html = html.replace(/__PROTECTED_LIGHTBOX__="/gi, 'class="');
+
+// 3.4.1. Возвращаем контейнер содержания на место
+html = html.replace(/<__PROTECTED_TOC_DIV__>/gi, '<div class="table-of-contents">');
+html = html.replace(/<\/__PROTECTED_TOC_DIV__>/gi, '</div>');
 
  // ===== БЛОК 4: ФОРМАТИРОВАНИЕ ТЕКСТА =====
 
