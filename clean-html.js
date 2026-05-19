@@ -1,7 +1,7 @@
  /***
  * Clean HTML Script
- * Version: 1.59
- * Updated: 19.05.2026
+ * Version: 1.60
+ * Updated: 20.05.2026
  * GitHub: https://github.com/nomidua/clean-html-script
  * CDN: https://cdn.jsdelivr.net/gh/nomidua/clean-html-script@main/clean-html.js
  * Update and Clear Cache: https://purge.jsdelivr.net/gh/nomidua/clean-html-script@main/clean-html.js
@@ -148,10 +148,10 @@
  // 1.5. Убираем атрибут id // OLD
  // html = html.replace(/\s+id="[^"]*"/gi, '');
 
- // 1.5. Убираем атрибут id (защищая id у h2 для содержания)
- html = html.replace(/(<h2[^>]*?)\s+id="([^"]*)"([^>]*?>)/gi, '$1 __PROTECTED_H2_ID__="$2"$3');
+ // 1.5. Убираем атрибут id (оставляем у h2, ТОЛЬКО если есть содержание)
+ if (tocContent) { html = html.replace(/(<h2[^>]*?)\s+id="([^"]*)"([^>]*?>)/gi, '$1 __PROTECTED_H2_ID__="$2"$3'); }
  html = html.replace(/\s+id="[^"]*"/gi, '');
- html = html.replace(/__PROTECTED_H2_ID__="/gi, 'id="');
+ if (tocContent) { html = html.replace(/__PROTECTED_H2_ID__="/gi, 'id="'); }
 
  // 1.6. Убираем все data-* атрибуты
  html = html.replace(/\s+data-[a-z-]+="[^"]*"/gi, '');
