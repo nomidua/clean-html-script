@@ -1,7 +1,7 @@
  /***
  * Clean HTML Script
- * Version: 1.60
- * Updated: 20.05.2026
+ * Version: 1.63
+ * Updated: 11.09.2026
  * GitHub: https://github.com/nomidua/clean-html-script
  * CDN: https://cdn.jsdelivr.net/gh/nomidua/clean-html-script@main/clean-html.js
  * Update and Clear Cache: https://purge.jsdelivr.net/gh/nomidua/clean-html-script@main/clean-html.js
@@ -201,9 +201,11 @@ html = html.replace(/<h[234][^>]*>\s*\$IMAGE(\d+)\$\s*<\/h[234]>/gi, function(ma
  html = html.replace(/<span[^>]*>/gi, '');
  html = html.replace(/<\/span>/gi, '');
 
- // 2.7. Удаляем теги <section>
+ // 2.7. Удаляем теги <section> и <aside>
  html = html.replace(/<section[^>]*>/gi, '');
  html = html.replace(/<\/section>/gi, '');
+ html = html.replace(/<aside[^>]*>/gi, '');
+ html = html.replace(/<\/aside>/gi, '');
 
  // 2.8. Очистка списков - пустые <li>
  html = html.replace(/<li[^>]*>(\s|&nbsp;)*<\/li>/gi, '');
