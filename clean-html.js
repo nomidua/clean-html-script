@@ -1,7 +1,7 @@
  /***
  * Clean HTML Script
- * Version: 1.63
- * Updated: 11.09.2026
+ * Version: 1.7
+ * Updated: 29.09.2026
  * GitHub: https://github.com/nomidua/clean-html-script
  * CDN: https://cdn.jsdelivr.net/gh/nomidua/clean-html-script@main/clean-html.js
  * Update and Clear Cache: https://purge.jsdelivr.net/gh/nomidua/clean-html-script@main/clean-html.js
@@ -129,6 +129,13 @@
  html = html.replace(/<div\s+class="table-of-contents">[\s\S]*?<\/div>/gi, function(match) {
      tocContent = match;
      return '__PROTECTED_TOC_PLACEHOLDER__';
+ });
+
+ // 0.1. Защита <script> (JSON-LD и другие вставленные скрипты)
+ var scriptBlocks = [];
+ html = html.replace(/<script[^>]*>[\s\S]*?<\/script>/gi, function(match) {
+     scriptBlocks.push(match);
+     return '__PROTECTED_SCRIPT_' + (scriptBlocks.length - 1) + '__';
  });
 
  // ===== БЛОК 1: УДАЛЕНИЕ АТРИБУТОВ =====
@@ -481,6 +488,11 @@ html = html.replace(/__PROTECTED_LIGHTBOX__="/gi, 'class="');
   // Возвращаем блок содержания на место
  if (tocContent) {
      html = html.replace('__PROTECTED_TOC_PLACEHOLDER__', tocContent);
+ }
+
+  // Возвращаем защищенные <script> на место
+ for (var si = 0; si < scriptBlocks.length; si++) {
+     html = html.replace('__PROTECTED_SCRIPT_' + si + '__', scriptBlocks[si]);
  }
 
  // ===== КОНЕЦ ОЧИСТКИ =====
