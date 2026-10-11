@@ -520,6 +520,7 @@ if (isCKEditor) {
  };
 
  function showNotification(message, color) {
+ if (window.uzToast) { uzToast('<strong>Очистка HTML</strong>' + message.replace(/(<br\s*\/?>\s*)+/gi, '<br>'), color === '#4CAF50' ? 'ok' : 'err'); return; }
  var oldNotif = document.querySelector('[data-clean-html-notif]');
  if (oldNotif) oldNotif.remove();
 
