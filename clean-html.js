@@ -1,7 +1,7 @@
  /***
  * Clean HTML Script
- * Version: 1.8
- * Updated: 11.10.2026
+ * Version: 1.9
+ * Updated: 16.10.2026
  * GitHub: https://github.com/nomidua/clean-html-script
  * CDN: https://cdn.jsdelivr.net/gh/nomidua/clean-html-script@main/clean-html.js
  * Update and Clear Cache: https://purge.jsdelivr.net/gh/nomidua/clean-html-script@main/clean-html.js
@@ -202,6 +202,9 @@ html = html.replace(/<h[234][^>]*>\s*\$IMAGE(\d+)\$\s*<\/h[234]>/gi, function(ma
  return '<p style="text-align: center;">$IMAGE' + num + '$</p>';
 });
 
+ // 2.5.4. Заменяем <b> на <strong>
+ html = html.replace(/<b(\s[^>]*)?>/gi, '<strong>').replace(/<\/b>/gi, '</strong>');
+
  // 2.6. Удаляем все <div> и <span> (сохраняя содержимое)
  html = html.replace(/<div[^>]*>/gi, '');
  html = html.replace(/<\/div>/gi, '');
@@ -291,6 +294,7 @@ html = html.replace(/__PROTECTED_LIGHTBOX__="/gi, 'class="');
  html = html.replace(/\s+-\s+/g, ' &mdash; ');
  html = html.replace(/\s+–\s+/g, ' &mdash; ');
  html = html.replace(/\s+—\s+/g, ' &mdash; ');
+ html = html.replace(/(<\/(?:strong|b|em|i|a)>)(?:\s|&nbsp;)*—\s*/gi, '$1 &mdash; ');
 
  // 4.4. Очистка &nbsp;
  html = html.replace(/&nbsp;<\//g, '</');
@@ -457,8 +461,8 @@ html = html.replace(/__PROTECTED_LIGHTBOX__="/gi, 'class="');
  var cleaned = item;
 
  // Удаляем лишние знаки в конце
- cleaned = cleaned.replace(/(\s|&nbsp;|\.|\;|\,)+\s*<\/li>$/gi, '</li>');
- cleaned = cleaned.replace(/(\s|&nbsp;|\.|\;|\,)+\s*(<\/a>)/gi, '$2');
+ cleaned = cleaned.replace(/(&(?!nbsp;)[a-zA-Z0-9#]+;)?(?:\s|&nbsp;|[.;,])*<\/li>$/i, '$1</li>');
+ cleaned = cleaned.replace(/(&(?!nbsp;)[a-zA-Z0-9#]+;)?(?:\s|&nbsp;|[.;,])*(<\/a>)/gi, '$1$2');
 
  // Определяем нужный знак
  var punctuation;
@@ -472,11 +476,7 @@ html = html.replace(/__PROTECTED_LIGHTBOX__="/gi, 'class="');
  if (/<\/a>\s*<\/li>$/i.test(cleaned)) {
  cleaned = cleaned.replace(/(<\/a>)\s*<\/li>$/i, '$1' + punctuation + '</li>');
  } else {
- // Проверяем, есть ли уже нужный знак
- var hasCorrectPunctuation = new RegExp('[' + punctuation.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ']\\s*<\/li>$', 'i').test(cleaned);
- if (!hasCorrectPunctuation) {
  cleaned = cleaned.replace(/<\/li>$/i, punctuation + '</li>');
- }
  }
 
  return cleaned;
