@@ -1,7 +1,7 @@
  /***
  * Clean HTML Script
- * Version: 1.9
- * Updated: 16.10.2026
+ * Version: 2.0
+ * Updated: 23.10.2026
  * GitHub: https://github.com/nomidua/clean-html-script
  * CDN: https://cdn.jsdelivr.net/gh/nomidua/clean-html-script@main/clean-html.js
  * Update and Clear Cache: https://purge.jsdelivr.net/gh/nomidua/clean-html-script@main/clean-html.js
@@ -244,7 +244,7 @@ html = html.replace(/<p>\$IMAGE(\d+)\$<\/p>/gi, function(match, num) {
 });
 
 // 3.1.1. Защита style="margin-left: XXpx;" у параграфов
-html = html.replace(/<p\s+style="margin-left:\s*(\d+)px;">/gi, '<p __PROTECTED_MARGIN__="$1">');
+html = html.replace(/<p\s+style="(margin|padding)-left:\s*(\d+)px;">/gi, '<p __PROTECTED_MARGIN__="$1:$2">');
 
 // 3.1.2. Защита style="text-align: center;" у параграфов с <!--IMG
 html = html.replace(/<p\s+style="text-align:\s*center;">([\s\S]*?<!--IMG\d+-->[\s\S]*?)<\/p>/gi, function(match, content) {
@@ -258,7 +258,7 @@ html = html.replace(/(<img[^>]*)\s+style="([^"]*)"/gi, '$1 __PROTECTED_IMG_STYLE
 html = html.replace(/\s*style="[^"]*"/gi, '');
 
 // 3.2.1. Возвращаем margin-left у параграфов
-html = html.replace(/<p\s+__PROTECTED_MARGIN__="(\d+)">/gi, '<p style="margin-left: $1px;">');
+html = html.replace(/<p\s+__PROTECTED_MARGIN__="(margin|padding):(\d+)">/gi, '<p style="$1-left: $2px;">');
 
 // 3.2.2. Возвращаем text-align: center у параграфов с <!--IMG
 html = html.replace(/<p\s+__PROTECTED_CENTER__="true">/gi, '<p style="text-align: center;">');
