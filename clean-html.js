@@ -1,7 +1,7 @@
  /***
  * Clean HTML Script
- * Version: 2.0
- * Updated: 23.10.2026
+ * Version: 2.1
+ * Updated: 24.10.2026
  * GitHub: https://github.com/nomidua/clean-html-script
  * CDN: https://cdn.jsdelivr.net/gh/nomidua/clean-html-script@main/clean-html.js
  * Update and Clear Cache: https://purge.jsdelivr.net/gh/nomidua/clean-html-script@main/clean-html.js
@@ -519,64 +519,34 @@ if (isCKEditor) {
  showNotification('Код HTML очищен!<br /><br />Удалено ' + saved + ' символов', '#4CAF50');
  };
 
+ // Уведомления: как на uCoz (uzToast). Если u-add-page.js не подключён (WordPress) — создаём uzToast здесь
  function showNotification(message, color) {
- if (window.uzToast) { uzToast('<strong>Очистка HTML</strong>' + message.replace(/(<br\s*\/?>\s*)+/gi, '<br>'), color === '#4CAF50' ? 'ok' : 'err'); return; }
- var oldNotif = document.querySelector('[data-clean-html-notif]');
- if (oldNotif) oldNotif.remove();
-
- var notif = document.createElement('div');
- notif.setAttribute('data-clean-html-notif', 'true');
-
- notif.innerHTML = '<div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">' +
- '<strong style="font-size: 18px;">Результат очистки</strong>' +
- '<button id="close-notif" style="background: none; border: none; color: white; font-size: 36px; cursor: pointer; padding: 0; margin-left: 20px; line-height: 1;">&times;</button>' +
- '</div>' +
- message +
- '<div id="timer-bar" style="margin-top: 15px; font-size: 14px; opacity: 0.8;">' +
- 'Закроется через: <span id="timer-count">5</span> сек' +
- '</div>' +
- '<div style="width: 100%; height: 3px; background: rgba(255,255,255,0.3); margin-top: 8px; border-radius: 2px; overflow: hidden;">' +
- '<div id="progress-bar" style="width: 100%; height: 100%; background: white; transition: width 0.1s linear;"></div>' +
- '</div>';
-
- notif.style.cssText = 'position: fixed;' +
- 'top: 5px;' +
- 'right: 5px;' +
- 'background: ' + color + ';' +
- 'color: white;' +
- 'padding: 25px 30px;' +
- 'border-radius: 4px;' +
- 'z-index: 999999;' +
- 'font-size: 16px;' +
- 'box-shadow: 0 4px 12px rgba(0,0,0,0.3);' +
- 'font-family: Arial, sans-serif;' +
- 'min-width: 350px;' +
- 'max-width: 500px;';
-
- document.body.appendChild(notif);
-
- var closeBtn = notif.querySelector('#close-notif');
- var interval;
-
- closeBtn.addEventListener('click', function() {
- clearInterval(interval);
- notif.remove();
- });
-
- var timeLeft = 5;
- var timerElement = notif.querySelector('#timer-count');
- var progressBar = notif.querySelector('#progress-bar');
-
- interval = setInterval(function() {
- timeLeft--;
- timerElement.textContent = timeLeft;
- progressBar.style.width = (timeLeft / 5 * 100) + '%';
-
- if (timeLeft <= 0) {
- clearInterval(interval);
- notif.remove();
+ if (!window.uzToast) {
+ var s = document.createElement('style');
+ s.textContent = '@keyframes uzIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}@keyframes uzBar{from{transform:scaleX(1)}to{transform:scaleX(0)}}' +
+ '#uz-toasts{position:fixed;top:16px;right:16px;z-index:999999;display:flex;flex-direction:column;gap:10px;width:380px;max-width:calc(100vw - 32px)}' +
+ '.uz-t{position:relative;overflow:hidden;cursor:pointer;padding:14px 18px 17px;border-radius:10px;border:1px solid rgba(255,255,255,.7);background-color:rgba(255,255,255,.72);-webkit-backdrop-filter:blur(12px) saturate(1.4);backdrop-filter:blur(12px) saturate(1.4);box-shadow:0 8px 24px rgba(0,0,0,.15);font:16px/1.45 Arial,sans-serif;color:#222;text-align:left;animation:uzIn .25s ease-out}' +
+ '.uz-t strong:first-child{display:block;margin-bottom:3px}' +
+ '.uz-t i{position:absolute;left:0;bottom:0;height:3px;width:100%;transform-origin:left;animation:uzBar 5000ms linear forwards}' +
+ '.uz-t:hover i{animation-play-state:paused}';
+ document.head.appendChild(s);
+ window.uzToast = function (msg, type) {
+ type = type === 'info' || type === 'ok' || type === 'err' ? type : (type ? 'ok' : 'err');
+ var tint = {ok: 'rgba(22,163,74,.22)', err: 'rgba(220,38,38,.22)', info: 'transparent'}[type],
+ bar = {ok: '#16a34a', err: '#dc2626', info: '#9ca3af'}[type],
+ box = document.getElementById('uz-toasts');
+ if (!box) { box = document.createElement('div'); box.id = 'uz-toasts'; document.body.appendChild(box); }
+ while (box.children.length >= 3) box.removeChild(box.firstChild);
+ var t = document.createElement('div');
+ t.className = 'uz-t';
+ t.style.backgroundImage = 'radial-gradient(120% 140% at 100% 100%,' + tint + ',transparent 55%)';
+ t.innerHTML = String(msg).replace(/^(<strong>[\s\S]*?<\/strong>)\s*<br\s*\/?>/i, '$1') + '<i style="background:' + bar + '"></i>';
+ t.onclick = function () { t.remove(); };
+ t.lastChild.addEventListener('animationend', function () { t.remove(); });
+ box.appendChild(t);
+ };
  }
- }, 1000);
+ window.uzToast('<strong>Очистка HTML</strong>' + message.replace(/(<br\s*\/?>\s*)+/gi, '<br>'), color === '#4CAF50' ? 'ok' : 'err');
  }
 
  // Горячие клавиши Ctrl+Shift+L
