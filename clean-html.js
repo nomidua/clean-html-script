@@ -1,6 +1,6 @@
  /***
  * Clean HTML Script
- * Version: 2.1
+ * Version: 2.2
  * Updated: 24.10.2026
  * GitHub: https://github.com/nomidua/clean-html-script
  * CDN: https://cdn.jsdelivr.net/gh/nomidua/clean-html-script@main/clean-html.js
@@ -131,6 +131,40 @@
      return '__PROTECTED_TOC_PLACEHOLDER__';
  });
 
+  // 0.2. Instagram и TikTok: любая вставка → минимальная родная (blockquote + embed.js), защищена до конца очистки
+ var embeds = [], embedJs = {};
+ function embedPut(code, js) {
+     if (!embedJs[js]) { embedJs[js] = true; code += '\n<script async src="https://www.' + js + '.com/embed.js"></script>'; }
+     embeds.push(code);
+     return '__PROTECTED_EMBED_' + (embeds.length - 1) + '__';
+ }
+ function igEmbed(type, code, captioned) {
+     var url = 'https://www.instagram.com/' + type + '/' + code + '/';
+     return embedPut('<blockquote class="instagram-media"' + (captioned ? ' data-instgrm-captioned' : '') + ' data-instgrm-permalink="' + url + '" data-instgrm-version="14"><a href="' + url + '" target="_blank">' + url + '</a></blockquote>', 'instagram');
+ }
+ function ttEmbed(user, id) {
+     var url = 'https://www.tiktok.com/@' + user + '/video/' + id;
+     return embedPut('<blockquote class="tiktok-embed" cite="' + url + '" data-video-id="' + id + '" style="max-width: 605px;min-width: 325px;"><section><a href="' + url + '" target="_blank">' + url + '</a></section></blockquote>', 'tiktok');
+ }
+ html = html.replace(/\s*<script[^>]*src="[^"]*(?:instagram|tiktok)\.com\/embed\.js"[^>]*>\s*<\/script>/gi, '');
+ html = html.replace(/<blockquote[^>]*class="[^"]*instagram-media[^"]*"[\s\S]*?<\/blockquote>/gi, function(m) {
+     var u = m.match(/instagram\.com\/(?:[\w.]+\/)?(p|reel|tv)\/([\w-]+)/i);
+     return u ? igEmbed(u[1].toLowerCase(), u[2], /data-instgrm-captioned/i.test(m)) : m;
+ });
+ html = html.replace(/<iframe[^>]*src="[^"]*instagram\.com\/(?:[\w.]+\/)?(p|reel|tv)\/([\w-]+)[^"]*"[^>]*>\s*(?:<\/iframe>)?/gi, function(m, type, code) {
+     return igEmbed(type.toLowerCase(), code, /\/embed\/captioned/i.test(m));
+ });
+ html = html.replace(/<p[^>]*>\s*(?:<a[^>]*>)?\s*https?:\/\/(?:www\.)?instagram\.com\/(?:[\w.]+\/)?(p|reel|tv)\/([\w-]+)[^<\s]*\s*(?:<\/a>)?\s*<\/p>/gi, function(m, type, code) {
+     return igEmbed(type.toLowerCase(), code, true);
+ });
+ html = html.replace(/<blockquote[^>]*class="[^"]*tiktok-embed[^"]*"[\s\S]*?<\/blockquote>/gi, function(m) {
+     var u = m.match(/tiktok\.com\/@([\w.-]+)\/video\/(\d+)/i);
+     return u ? ttEmbed(u[1], u[2]) : m;
+ });
+ html = html.replace(/<p[^>]*>\s*(?:<a[^>]*>)?\s*https?:\/\/(?:www\.)?tiktok\.com\/@([\w.-]+)\/video\/(\d+)[^<\s]*\s*(?:<\/a>)?\s*<\/p>/gi, function(m, user, id) {
+     return ttEmbed(user, id);
+ });
+
  // 0.1. Защита <script> (JSON-LD и другие вставленные скрипты)
  var scriptBlocks = [];
  html = html.replace(/<script[^>]*>[\s\S]*?<\/script>/gi, function(match) {
@@ -246,8 +280,8 @@ html = html.replace(/<p>\$IMAGE(\d+)\$<\/p>/gi, function(match, num) {
 // 3.1.1. Защита style="margin-left: XXpx;" у параграфов
 html = html.replace(/<p\s+style="(margin|padding)-left:\s*(\d+)px;">/gi, '<p __PROTECTED_MARGIN__="$1:$2">');
 
-// 3.1.2. Защита style="text-align: center;" у параграфов с <!--IMG
-html = html.replace(/<p\s+style="text-align:\s*center;">([\s\S]*?<!--IMG\d+-->[\s\S]*?)<\/p>/gi, function(match, content) {
+// 3.1.2. Защита style="text-align: center;" у параграфов с <!--IMG и <iframe (YouTube)
+html = html.replace(/<p\s+style="text-align:\s*center;">((?:(?!<\/p>)[\s\S])*?(?:<!--IMG\d+-->|<iframe)[\s\S]*?)<\/p>/gi, function(match, content) {
  return '<p __PROTECTED_CENTER__="true">' + content + '</p>';
 });
 
@@ -331,11 +365,11 @@ html = html.replace(/__PROTECTED_LIGHTBOX__="/gi, 'class="');
  url = 'https://www.youtube.com/embed/' + videoId;
  }
 
- return '<iframe allowfullscreen="" frameborder="0" height="360" src="' + url + '" width="640">';
+ return '<iframe allowfullscreen="" frameborder="0" height="360" loading="lazy" src="' + url + '" width="640">';
  });
 
  // 5.2. Преобразование YouTube ссылок в iframe
- html = html.replace(/<p>\s*(https?:\/\/(?:www\.)?(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]+)(?:[?&]([^<\s]*))?)?\s*<\/p>/gi, function(match, fullUrl, videoId, params) {
+ html = html.replace(/<p>\s*(https?:\/\/(?:www\.)?(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([a-zA-Z0-9_-]+)(?:[?&]([^<\s]*))?)?\s*<\/p>/gi, function(match, fullUrl, videoId, params) {
  if (!videoId) return match;
 
  var embedUrl = 'https://www.youtube.com/embed/' + videoId;
@@ -348,7 +382,7 @@ html = html.replace(/__PROTECTED_LIGHTBOX__="/gi, 'class="');
  }
  }
 
- return '<p style="text-align: center;"><iframe allowfullscreen="" frameborder="0" height="360" src="' + embedUrl + '" width="640"></iframe></p>';
+ return '<p style="text-align: center;"><iframe allowfullscreen="" frameborder="0" height="360" loading="lazy" src="' + embedUrl + '" width="640"></iframe></p>';
  });
 
  // 5.3. Преобразование <dl> в <ul>
@@ -493,6 +527,11 @@ html = html.replace(/__PROTECTED_LIGHTBOX__="/gi, 'class="');
   // Возвращаем защищенные <script> на место
  for (var si = 0; si < scriptBlocks.length; si++) {
      html = html.replace('__PROTECTED_SCRIPT_' + si + '__', scriptBlocks[si]);
+ }
+
+  // Возвращаем вставки Instagram и TikTok на место
+ for (var ei = 0; ei < embeds.length; ei++) {
+     html = html.replace(new RegExp('<p[^>]*>\\s*__PROTECTED_EMBED_' + ei + '__\\s*</p>|__PROTECTED_EMBED_' + ei + '__'), function() { return embeds[ei]; });
  }
 
  // ===== КОНЕЦ ОЧИСТКИ =====
