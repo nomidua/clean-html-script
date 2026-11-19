@@ -344,7 +344,7 @@ html = html.replace(/__PROTECTED_LIGHTBOX__="/gi, 'class="');
  html = html.replace(/<\/a>&nbsp;/gi, '</a> ');
  html = html.replace(/([а-яёА-ЯЁa-zA-Z0-9])<a\s/gi, '$1 <a ');
  html = html.replace(/<\/a>([а-яёА-ЯЁa-zA-Z0-9])/gi, '</a> $1');
- html = html.replace(/([.,!?;:])<a\s/gi, '$1 <a ');
+ html = html.replace(/(&[a-zA-Z0-9#]+;|[.,!?;:])<a\s/gi, function(m, p) { return p.charAt(0) === '&' ? m : p + ' <a '; });
  html = html.replace(/<\/a>([.,!?;:])/gi, '</a>$1 ');
  html = html.replace(/(\s|&nbsp;)+([.,!?;:])/g, '$2');
 
