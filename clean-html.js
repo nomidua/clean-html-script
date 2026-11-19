@@ -1,7 +1,7 @@
  /***
  * Clean HTML Script
- * Version: 2.2
- * Updated: 24.10.2026
+ * Version: 2.3
+ * Updated: 19.11.2026
  * GitHub: https://github.com/nomidua/clean-html-script
  * CDN: https://cdn.jsdelivr.net/gh/nomidua/clean-html-script@main/clean-html.js
  * Update and Clear Cache: https://purge.jsdelivr.net/gh/nomidua/clean-html-script@main/clean-html.js
